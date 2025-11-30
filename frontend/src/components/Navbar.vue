@@ -24,7 +24,7 @@
 
         <ul class="navbar-nav">
            <li class="nav-item">
-             <button class="btn btn-light btn-sm">Đăng xuất</button>
+             <button @click="handleLogout" class="btn btn-light btn-sm">Đăng xuất</button>
            </li>
         </ul>
       </div>
@@ -33,7 +33,16 @@
 </template>
 
 <script setup>
+    import { useAuthStore } from '@/stores/authStore';
+    import { useRouter } from 'vue-router';
 
+    const authStore = useAuthStore();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        // Gọi action logout từ store
+        await authStore.logout();
+    };
 </script>
 
 <style scoped>

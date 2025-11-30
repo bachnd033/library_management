@@ -8,12 +8,12 @@ return [
 
     'allowed_origins' => [
         'http://localhost:5173', //Vue/Vite dev server
-        'http://127.0.0.1:5173', 
+        // 'http://127.0.0.1:5173', 
     ],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],
+    'allowed_headers' => ['*'],
 
     'exposed_headers' => [],
 
