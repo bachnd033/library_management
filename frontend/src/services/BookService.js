@@ -4,6 +4,7 @@ export const BookService = {
     // [R] READ: Lấy danh sách sách
     getAllBooks() {
         return api.get('/books');
+        console.log("⚡ ĐANG GỌI API VỚI BASE URL:", api.defaults.baseURL);
     },
 
     // [R] READ: Lấy chi tiết sách

@@ -3,15 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Book extends Model
 {
     use HasFactory;
 
-    /**
-     * Các trường có thể được gán giá trị hàng loạt (Mass Assignable).
-     * available_copies sẽ được tính toán qua logic nghiệp vụ.
-     */
     protected $fillable = [
         'title',
         'author',

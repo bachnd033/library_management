@@ -18,7 +18,8 @@
             <th>ID</th>
             <th>Tiêu đề</th>
             <th>Tác giả</th>
-            <th>Tồn kho</th>
+            <th>Thể loại</th>
+            <th>Tồn kho (Sẵn / Tổng)</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -28,9 +29,17 @@
           </tr>
           <tr v-for="book in bookStore.books" :key="book.id">
             <td>{{ book.id }}</td>
-            <td>{{ book.title }}</td>
+            <td class="fw-bold text-primary">{{ book.title }}</td>
             <td>{{ book.author }}</td>
-            <td>{{ book.stock_quantity }}</td>
+            <td>{{ book.category }}</td>
+            
+            <td>
+               <span class="fw-bold">
+                  {{ book.available_copies ?? '-' }}
+               </span> 
+               <span class="text-muted mx-1">/</span>
+               <span class="fw-bold">{{ book.total_copies ?? '-' }}</span>
+            </td>
             <td>
               <button @click="router.push(`/books/edit/${book.id}`)" class="btn btn-warning btn-sm me-2">Sửa</button>
               <button @click="handleDelete(book.id, book.title)" class="btn btn-danger btn-sm">Xóa</button>
@@ -43,7 +52,6 @@
 </template>
 
 <script setup>
-// Script logic (giữ nguyên)
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBookStore } from '@/stores/bookStore';
@@ -66,10 +74,7 @@ const handleDelete = async (bookId, bookTitle) => {
 </script>
 
 <style scoped>
-/* XÓA HẾT CSS CŨ TRONG NÀY.
-  Chúng ta đang dùng Bootstrap để xử lý toàn bộ giao diện.
-*/
-.h3 {
-  margin-bottom: 0; /* Giữ cho tiêu đề đẹp hơn */
-}
+    .h3 {
+    margin-bottom: 0; 
+    }
 </style>
