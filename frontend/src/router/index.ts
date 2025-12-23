@@ -3,17 +3,25 @@ import BookList from '../views/BookList.vue';
 import BookCreate from '../views/BookCreate.vue';
 import BookEdit from '../views/BookEdit.vue';
 import LoginView from '../views/Login.vue';
+import HomeView from '@/views/HomeView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // {
+    //   path: '/books',
+    //   name: 'books',
+    //   redirect: '/books', 
+    //   meta: { requiresAuth: true }
+    // },
+    
     {
       path: '/',
-      name: 'home',
-      redirect: '/books', 
-      meta: { requiresAuth: true }
+      name: 'Home',
+      component: HomeView, 
+      meta: { requiresAuth: false }
     },
-    
+
     {
       path: '/login',
       name: 'Login',
@@ -26,7 +34,7 @@ const router = createRouter({
 
     {
       path: '/books',
-      name: 'booklist',
+      name: 'BookList',
       component: BookList,
       meta: { requiresAuth: true }
     },

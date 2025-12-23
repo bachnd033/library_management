@@ -16,4 +16,9 @@ import Navbar from '@/components/Navbar.vue';
 body {
   background-color: #f8f9fa; 
 }
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 </style>
