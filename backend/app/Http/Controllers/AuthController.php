@@ -16,27 +16,30 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Validate dữ liệu gửi lên
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
 
-        // Đăng nhập bằng Auth::attempt
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            
-            // Đăng nhập thành công -> Tạo lại Session ID
-            $request->session()->regenerate();
-
-            // Trả về thông tin User và status 200
+        // Kiểm tra thông tin đăng nhập
+        if (!Auth::attempt($validated)) {
             return response()->json([
-                'message' => 'Đăng nhập thành công!',
-                'user' => Auth::user(),
-            ]);
+                'message' => 'Thông tin đăng nhập không chính xác (Email hoặc Mật khẩu sai).'
+            ], 401); // Trả về lỗi 401 Unauthorized
         }
 
-        throw ValidationException::withMessages([
-            'email' => ['Thông tin đăng nhập không chính xác.'],
-        ]);
+        // Lấy thông tin user sau khi đăng nhập thành công
+        $user = User::where('email', $validated['email'])->first();
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        // Trả về JSON chứa Token và User
+        return response()->json([
+            'message' => 'Đăng nhập thành công',
+            'access_token' => $token, 
+            'token_type' => 'Bearer',
+            'user' => $user
+        ], 200);
     }
 
     /**

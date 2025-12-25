@@ -49,17 +49,40 @@ export const useAuthStore = defineStore('authStore', {
     },
 
     /**
-     * Xử lý Đăng nhập (Gồm 2 bước của Sanctum)
+     * Xử lý Đăng nhập (
      */
     async login(credentials) {
-      // 1. Lấy CSRF cookie (Bắt buộc cho Sanctum)
-      await api.get('http://localhost:8000/sanctum/csrf-cookie'); 
+      this.isLoading = true;
+      this.error = null; // Reset lỗi cũ
+      try {
+        // Lấy CSRF cookie 
+        await api.get('http://localhost:8000/sanctum/csrf-cookie'); 
 
-      // 2. Gửi yêu cầu đăng nhập
-      await api.post('/login', credentials);
+        // Gửi yêu cầu đăng nhập
+        const response = await api.post('/login', credentials);
 
-      // 3. Đăng nhập thành công, lấy thông tin user
-      await this.fetchUser();
+        // Lưu Token nhận được
+        const token = response.data.access_token || response.data.token;
+        
+        if (token) {
+            this.token = token;
+            localStorage.setItem('token', token);
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+            console.warn("Server không trả về Token!");
+        }
+
+        // 4. Lấy thông tin User
+        await this.fetchUser();
+
+        return true; // Báo thành công
+      } catch (err) {
+        console.error('Lỗi đăng nhập:', err);
+        this.error = err.response?.data?.message || 'Đăng nhập thất bại';
+        return false; // Báo thất bại
+      } finally {
+        this.isLoading = false;
+      }
     },
 
     /**
@@ -67,13 +90,24 @@ export const useAuthStore = defineStore('authStore', {
      */
     async logout() {
       try {
+        // Gọi API để Server hủy token
         await api.post('/logout');
-        this.user = null;
-        this.isLoggedIn = false;
-        // Chuyển về trang đăng nhập
-        router.push('/login');
       } catch (error) {
-        console.error('Lỗi khi đăng xuất:', error);
+        console.warn('Lỗi gọi API logout:', error);
+      } finally {
+        // Dọn dẹp dữ liệu ở Frontend  
+        this.user = null;
+        this.token = null;
+        this.isLoggedIn = false;
+        
+        // Xóa sạch Token trong kho
+        localStorage.removeItem('token'); 
+        
+        // Xóa header Authorization của Axios
+        delete api.defaults.headers.common['Authorization'];
+
+        // Chuyển hướng về trang đăng nhập
+        router.push('/login');
       }
     },
 
@@ -99,6 +133,6 @@ export const useAuthStore = defineStore('authStore', {
         } finally {
             this.isLoading = false;
         }
-    }
+    },
   }
 });

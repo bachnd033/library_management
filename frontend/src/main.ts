@@ -11,42 +11,48 @@ import { useAuthStore } from './stores/authStore'
 
 const app = createApp(App)
 
-// Cài đặt Pinia 
 app.use(createPinia())
-// Cài đặt Router
 app.use(router)
 
 /**
  * -----------------------------------------------------------------
  * NAVIGATION GUARD (Bảo vệ Route)
+ * Logic: Chặn ngay từ cửa nếu không có vé (Token)
  * -----------------------------------------------------------------
  */
 router.beforeEach(async (to, from, next) => {
-  // Gọi useAuthStore() BÊN TRONG guard
   const authStore = useAuthStore();
-
-  // Cố gắng fetch user nếu state chưa được tải (cho trường hợp F5)
-  if (authStore.user === null) {
-      try {
-          await authStore.fetchUser(); // Chờ lấy thông tin user
-      } catch (error) {
-          // Lỗi (ví dụ: session hết hạn), không sao, isLoggedIn vẫn là false
-      }
-  }
-
-  // Kiểm tra quyền truy cập
+  
+  // Lấy Token trực tiếp từ kho
+  const token = localStorage.getItem('token');
+  
+  // Xác định xem trang này có cần bảo vệ không
   const requiresAuth = to.meta.requiresAuth;
+  const isGuestOnly = to.meta.guestOnly; 
 
-  if (requiresAuth && !authStore.isLoggedIn) {
-    // Nếu route yêu cầu đăng nhập VÀ user chưa đăng nhập
-    next('/login'); // Chuyển hướng về trang login
-  } else if (to.path === '/login' && authStore.isLoggedIn) {
-    // (Tùy chọn): Nếu đã đăng nhập, không cho vào trang login nữa
-    next('/books'); // Chuyển về trang books
-  } else {
-    // Cho phép truy cập
-    next();
+  if (requiresAuth && !token) {
+    console.warn("🚫 CHẶN: Không có token, đá về Login");
+    return next('/login'); // Dừng ngay lập tức, chuyển hướng
   }
+
+  if (isGuestOnly && token) {
+    console.warn("🚫 CHẶN: Đã đăng nhập, đá về Home");
+    return next('/'); 
+  }
+
+  if (token && !authStore.user) {
+    try {
+      await authStore.fetchUser();
+    } catch (e) {
+      // Nếu token hết hạn hoặc lỗi -> Xóa token và bắt đăng nhập lại
+      console.error("Token lỗi, đăng xuất...");
+      authStore.logout(); 
+      return next('/login');
+    }
+  }
+
+  // Nếu không vi phạm gì cả -> Cho đi tiếp
+  next();
 });
 
 app.mount('#app')
