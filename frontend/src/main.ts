@@ -31,12 +31,12 @@ router.beforeEach(async (to, from, next) => {
   const isGuestOnly = to.meta.guestOnly; 
 
   if (requiresAuth && !token) {
-    console.warn("🚫 CHẶN: Không có token, đá về Login");
+    console.warn("CHẶN: Không có token, đá về Login");
     return next('/login'); // Dừng ngay lập tức, chuyển hướng
   }
 
   if (isGuestOnly && token) {
-    console.warn("🚫 CHẶN: Đã đăng nhập, đá về Home");
+    console.warn("CHẶN: Đã đăng nhập, đá về Home");
     return next('/'); 
   }
 

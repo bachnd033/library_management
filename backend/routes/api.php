@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LoanController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -18,4 +19,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Quản lý Sách (Chỉ user đăng nhập mới được thao tác)
     Route::apiResource('books', BookController::class);
+
+    Route::post('/borrow', [LoanController::class, 'borrow']);
 });

@@ -19,5 +19,9 @@ export const BookService = {
 
     deleteBook(id) {
         return api.delete(`/books/${id}`);
-    }
+    },
+
+    borrowBook(bookId) {
+        return api.post('/borrow', { book_id: bookId });
+    },
 };

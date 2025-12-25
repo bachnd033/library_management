@@ -92,6 +92,22 @@ export const useBookStore = defineStore('bookStore', {
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        async borrowBook(bookId) {
+            this.isLoading = true;
+            try {
+                await BookService.borrowBook(bookId);
+                
+                // Mượn thành công thì phải cập nhật lại danh sách để số lượng giảm đi
+                await this.fetchBooks();                
+                return { success: true, message: 'Mượn sách thành công!' };
+            } catch (err) {
+                const msg = err.response?.data?.message || 'Không thể mượn sách.';
+                return { success: false, message: msg };
+            } finally {
+                this.isLoading = false;
+            }
         }
     }
 });
