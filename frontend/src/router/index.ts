@@ -5,6 +5,7 @@ import BookEdit from '../views/BookEdit.vue';
 import LoginView from '../views/Login.vue';
 import HomeView from '@/views/HomeView.vue';
 import RegisterView from '@/views/RegisterView.vue';
+import MyBooks from '@/views/MyBooks.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,7 +63,14 @@ const router = createRouter({
       name: 'BookEdit',
       component: BookEdit,
       meta: { requiresAuth: true }
-    }
+    },
+
+    {
+    path: '/my-books',
+    name: 'MyBooks',
+    component: MyBooks,
+    meta: { requiresAuth: true }
+    },
     // {
     //   path: '/about',
     //   name: 'about',

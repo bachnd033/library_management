@@ -23,7 +23,7 @@ class LoanController extends Controller
             return response()->json(['message' => 'Sách này đã hết hàng.'], 400);
         }
 
-        // Kiểm tra xem user này có đang mượn cuốn này mà chưa trả không (Tùy chọn)
+        // Kiểm tra xem user này có đang mượn cuốn này mà chưa trả không 
         $existingLoan = Loan::where('user_id', $request->user()->id)
                             ->where('book_id', $book->id)
                             ->whereNull('returned_at')
@@ -52,6 +52,57 @@ class LoanController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Lỗi hệ thống, vui lòng thử lại.'], 500);
+        }
+    }
+
+    // Xem sách đang mượn
+    public function myLoans(Request $request)
+    {
+        // Lấy các phiếu mượn của user hiện tại mà chưa trả (returned_at là null)
+        $loans = Loan::with('book') // Load kèm thông tin sách
+            ->where('user_id', $request->user()->id)
+            ->whereNull('returned_at')
+            ->get();
+
+        return response()->json([
+            'data' => $loans
+        ]);
+    }
+
+    // Trả sách
+    public function returnBook(Request $request)
+    {
+        $request->validate([
+            'book_id' => 'required|exists:books,id',
+        ]);
+
+        // Tìm phiếu mượn đang hoạt động (chưa trả)
+        $loan = Loan::where('user_id', $request->user()->id)
+            ->where('book_id', $request->book_id)
+            ->whereNull('returned_at')
+            ->first();
+
+        if (!$loan) {
+            return response()->json(['message' => 'Bạn không mượn cuốn sách này hoặc đã trả rồi.'], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Cập nhật ngày trả
+            $loan->update([
+                'returned_at' => now()
+            ]);
+
+            // Cộng lại số lượng sách vào kho
+            $book = Book::find($request->book_id);
+            $book->increment('available_copies');
+
+            DB::commit();
+
+            return response()->json(['message' => 'Trả sách thành công!']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Lỗi hệ thống khi trả sách.'], 500);
         }
     }
 }

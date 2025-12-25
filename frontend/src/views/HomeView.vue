@@ -90,7 +90,6 @@ import Footer from '@/components/Footer.vue';
 const router = useRouter();
 const searchQuery = ref('');
 
-// Dữ liệu giả lập cho sách nổi bật (Sau này bạn có thể gọi API để lấy 4 sách mới nhất)
 const featuredBooks = ref([
   { id: 1, title: 'Nhà Giả Kim', author: 'Paulo Coelho', category: 'Văn học' },
   { id: 2, title: 'Đắc Nhân Tâm', author: 'Dale Carnegie', category: 'Kỹ năng' },
@@ -98,19 +97,15 @@ const featuredBooks = ref([
   { id: 4, title: 'Clean Code', author: 'Robert C. Martin', category: 'Công nghệ' },
 ]);
 
-const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    // Chuyển hướng sang trang BookList và kèm theo query search
-    // Bạn cần sửa BookList để nhận query này (tôi sẽ hướng dẫn nếu cần)
-    router.push({ name: 'BookList', query: { search: searchQuery.value } });
-  }
-};
-</script>
+// const handleSearch = () => {
+//   if (searchQuery.value.trim()) {
+//     router.push({ name: 'BookList', query: { search: searchQuery.value } });
+//   }
+// };
+// </script>
 
 <style scoped>
-/* Hero Section Styling */
 .hero-section {
-  /* Ảnh nền thư viện (có thể thay link ảnh khác) */
   background-image: url('https://images.unsplash.com/photo-1507842217121-9e96c885ee3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
   background-size: cover;
   background-position: center;
@@ -124,12 +119,12 @@ const handleSearch = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* Lớp phủ đen mờ để chữ dễ đọc */
+  background: rgba(0, 0, 0, 0.6); 
   z-index: 0;
 }
 
 .z-index-1 {
-  z-index: 1; /* Đảm bảo nội dung nằm trên lớp phủ */
+  z-index: 1; 
 }
 
 .search-box {

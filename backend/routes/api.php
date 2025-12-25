@@ -20,5 +20,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Quản lý Sách (Chỉ user đăng nhập mới được thao tác)
     Route::apiResource('books', BookController::class);
 
+    //Mượn sách
     Route::post('/borrow', [LoanController::class, 'borrow']);
+
+    // Xem sách đang mượn
+    Route::get('/my-loans', [LoanController::class, 'myLoans']); 
+
+    // Trả sách
+    Route::post('/return', [LoanController::class, 'returnBook']); 
 });

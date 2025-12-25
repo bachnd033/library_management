@@ -24,4 +24,12 @@ export const BookService = {
     borrowBook(bookId) {
         return api.post('/borrow', { book_id: bookId });
     },
+
+    getMyLoans() {
+        return api.get('/my-loans');
+    },
+
+    returnBook(bookId) {
+        return api.post('/return', { book_id: bookId });
+    },
 };

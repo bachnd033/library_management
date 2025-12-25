@@ -5,6 +5,7 @@ export const useBookStore = defineStore('bookStore', {
     state: () => ({
         books: [],
         currentBook: null,
+        borrowedBooks: [],
         pagination: {},
         isLoading: false,
         error: null,
@@ -108,6 +109,38 @@ export const useBookStore = defineStore('bookStore', {
             } finally {
                 this.isLoading = false;
             }
-        }
+        },
+
+        async fetchBorrowedBooks() {
+            this.isLoading = true;
+            try {
+                const response = await BookService.getMyLoans();
+                this.borrowedBooks = response.data.data;
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        // Trả sách
+        async returnBook(bookId) {
+            this.isLoading = true;
+            try {
+                await BookService.returnBook(bookId);
+                
+                // Xóa khỏi danh sách đang mượn
+                this.borrowedBooks = this.borrowedBooks.filter(item => item.book_id !== bookId);
+                
+                // Cập nhật lại list sách chính để hiển thị số lượng tồn kho mới
+                await this.fetchBooks(); 
+
+                return { success: true, message: 'Đã trả sách thành công.' };
+            } catch (err) {
+                return { success: false, message: err.response?.data?.message || 'Lỗi trả sách' };
+            } finally {
+                this.isLoading = false;
+            }
+        },
     }
 });
