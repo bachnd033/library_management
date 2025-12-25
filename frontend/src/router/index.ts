@@ -6,6 +6,7 @@ import LoginView from '../views/Login.vue';
 import HomeView from '@/views/HomeView.vue';
 import RegisterView from '@/views/RegisterView.vue';
 import MyBooks from '@/views/MyBooks.vue';
+import UserProfile from '@/views/UserProfile.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -66,10 +67,17 @@ const router = createRouter({
     },
 
     {
-    path: '/my-books',
-    name: 'MyBooks',
-    component: MyBooks,
-    meta: { requiresAuth: true }
+      path: '/my-books',
+      name: 'MyBooks',
+      component: MyBooks,
+      meta: { requiresAuth: true }
+    },
+
+    {
+      path: '/profile',
+      name: 'UserProfile',
+      component: UserProfile,
+      meta: { requiresAuth: true }
     },
     // {
     //   path: '/about',

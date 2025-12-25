@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import { BookService } from '@/services/BookService';
+import axios from 'axios';
 
 export const useBookStore = defineStore('bookStore', {
     state: () => ({
         books: [],
         currentBook: null,
         borrowedBooks: [],
+        wishlist: [],
         pagination: {},
         isLoading: false,
         error: null,
@@ -141,6 +143,21 @@ export const useBookStore = defineStore('bookStore', {
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        async fetchWishlist() {
+            try {
+                const res = await axios.get('/wishlist');
+                this.wishlist = res.data;
+            } catch (e) { console.error(e); }
+        },
+
+        async toggleWishlist(bookId) {
+            try {
+                await api.post('/wishlist/toggle', { book_id: bookId });
+                await this.fetchWishlist(); // Load lại danh sách mới
+                return true;
+            } catch (e) { return false; }
         },
     }
 });

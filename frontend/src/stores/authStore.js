@@ -134,5 +134,18 @@ export const useAuthStore = defineStore('authStore', {
             this.isLoading = false;
         }
     },
+    
+    async updateProfile(formData) {
+        this.isLoading = true;
+        try {
+            const response = await api.put('/profile', formData);
+            this.user = response.data.user; // Cập nhật lại user trong store
+            return { success: true, message: 'Cập nhật thành công!' };
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || 'Lỗi cập nhật' };
+        } finally {
+            this.isLoading = false;
+        }
+    },
   }
 });
