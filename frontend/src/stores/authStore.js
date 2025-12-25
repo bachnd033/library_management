@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import api from '@/api/axios'; // Import Axios instance
-import router from '@/router'; // Import router
+import api from '@/api/axios'; 
+import router from '@/router'; 
+import { AuthService } from '@/services/AuthService';
 
 export const useAuthStore = defineStore('authStore', {
   state: () => ({
@@ -10,17 +11,41 @@ export const useAuthStore = defineStore('authStore', {
 
   actions: {
     /**
-     * Lấy thông tin user (thường gọi khi tải lại trang)
+     * Lấy thông tin user nếu đã đăng nhập
      */
     async fetchUser() {
-      try {
-        const response = await api.get('/user');
-        this.user = response.data;
-        this.isLoggedIn = true;
-      } catch (error) {
-        this.user = null;
-        this.isLoggedIn = false;
-      }
+      // Kiểm tra xem có token trong localStorage không
+        const token = localStorage.getItem('token');
+         
+        if (!token) {
+            this.user = null;
+            this.isLoggedIn = false;
+            return; 
+        }
+
+        // Có token mới gọi API
+        this.isLoading = true;
+        try {
+            // Đảm bảo token được gắn vào request hiện tại
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
+            const response = await api.get('/user');
+            this.user = response.data;
+            this.isLoggedIn = true;
+        } catch (error) {
+            // Nếu có token nhưng gọi API vẫn lỗi (Token hết hạn/Fake token)
+            console.warn("Token không hợp lệ hoặc đã hết hạn.");
+            
+            // Xóa token bẩn đi để lần sau không gọi nữa
+            this.user = null;
+            this.isLoggedIn = false;
+            localStorage.removeItem('token'); 
+            
+            // Xóa header cũ
+            delete api.defaults.headers.common['Authorization'];
+        } finally {
+            this.isLoading = false;
+        }
     },
 
     /**
@@ -50,6 +75,30 @@ export const useAuthStore = defineStore('authStore', {
       } catch (error) {
         console.error('Lỗi khi đăng xuất:', error);
       }
+    },
+
+    async register(userInfo) {
+        this.isLoading = true;
+        this.error = null;
+        try {
+            // Gọi API đăng ký
+            const response = await AuthService.register(userInfo);
+            
+            this.token = response.data.access_token;
+            this.user = response.data.user;
+            
+            localStorage.setItem('token', this.token);
+            
+            // Cấu hình lại header cho axios
+            api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            
+            return true;
+        } catch (err) {
+            this.error = err.response?.data?.message || 'Đăng ký thất bại';
+            return false;
+        } finally {
+            this.isLoading = false;
+        }
     }
   }
 });

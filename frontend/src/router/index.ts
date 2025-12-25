@@ -4,6 +4,7 @@ import BookCreate from '../views/BookCreate.vue';
 import BookEdit from '../views/BookEdit.vue';
 import LoginView from '../views/Login.vue';
 import HomeView from '@/views/HomeView.vue';
+import RegisterView from '@/views/RegisterView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,16 @@ const router = createRouter({
       name: 'Home',
       component: HomeView, 
       meta: { requiresAuth: false }
+    },
+
+    { 
+      path: '/register',
+      name: 'Register',
+      component: RegisterView,
+      meta: { 
+        requiresAuth: false,
+        hideNavbar: true 
+      }
     },
 
     {

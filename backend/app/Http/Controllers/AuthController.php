@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -55,9 +57,33 @@ class AuthController extends Controller
         return response()->json(['message' => 'Đăng xuất thành công']);
     }
 
+    public function register(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6|confirmed', 
+    ]);
+
+    $user = User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => Hash::make($validated['password']),
+        'role' => 'user',
+    ]);
+
+    // Tự động đăng nhập luôn sau khi đăng ký
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Đăng ký thành công',
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => $user
+    ], 201);
+}
     /**
      * Lấy thông tin User hiện tại (Me)
-     * Dùng để Frontend kiểm tra xem F5 lại trang thì còn đăng nhập không
      */
     public function user(Request $request)
     {
