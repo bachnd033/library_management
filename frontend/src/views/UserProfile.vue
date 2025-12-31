@@ -80,7 +80,7 @@
                             <h6 class="mb-1">{{ book.title }}</h6>
                             <small class="text-muted">{{ book.author }}</small>
                         </div>
-                        <button @click="removeFromWishlist(book.id)" class="btn btn-sm btn-danger">
+                        <button @click="removeFromWishlist(book)" class="btn btn-sm btn-danger">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -112,10 +112,11 @@ const form = ref({
   password_confirmation: ''
 });
 
-onMounted(() => {
-  // Load dữ liệu khi vào trang
-  bookStore.fetchBorrowedBooks();
-  bookStore.fetchWishlist();
+onMounted(async () => {
+    // Đảm bảo dữ liệu tải xong mới làm việc khác
+    await bookStore.fetchBorrowedBooks();
+    await bookStore.fetchWishlist();
+
 });
 
 const handleUpdateProfile = async () => {
@@ -133,12 +134,11 @@ const handleReturn = async (bookId) => {
     }
 };
 
-const removeFromWishlist = async (bookId) => {
-    if(confirm('Bỏ sách này khỏi yêu thích?')) {
-        await bookStore.toggleWishlist(bookId);
+const removeFromWishlist = async (book) => {
+    if(confirm(`Bỏ sách "${book.title}" khỏi yêu thích?`)) {
+        await bookStore.toggleWishlist(book);
     }
 };
-
 const handleLogout = () => {
     authStore.logout();
     router.push('/login');

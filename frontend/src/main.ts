@@ -12,47 +12,37 @@ import { useAuthStore } from './stores/authStore'
 const app = createApp(App)
 
 app.use(createPinia())
-app.use(router)
 
-/**
- * -----------------------------------------------------------------
- * NAVIGATION GUARD (Bảo vệ Route)
- * Logic: Chặn ngay từ cửa nếu không có vé (Token)
- * -----------------------------------------------------------------
- */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  
-  // Lấy Token trực tiếp từ kho
-  const token = localStorage.getItem('token');
-  
-  // Xác định xem trang này có cần bảo vệ không
-  const requiresAuth = to.meta.requiresAuth;
-  const isGuestOnly = to.meta.guestOnly; 
 
-  if (requiresAuth && !token) {
-    console.warn("CHẶN: Không có token, đá về Login");
-    return next('/login'); // Dừng ngay lập tức, chuyển hướng
+  // Khôi phục trạng thái đăng nhập khi F5 trang
+  // Nếu Store chưa có User, gọi API lấy User
+  if (!authStore.user) {
+      try {
+          await authStore.fetchUser();
+      } catch (e) {
+          console.error("Lỗi khi khôi phục trạng thái đăng nhập:", e);
+      }
   }
 
-  if (isGuestOnly && token) {
-    console.warn("CHẶN: Đã đăng nhập, đá về Home");
+  // Kiểm tra quyền truy cập dựa trên kết quả bước 1
+  const isAuthenticated = !!authStore.user; 
+
+  // Trang yêu cầu đăng nhập 
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    console.warn("CHẶN: Chưa đăng nhập, đá về Login");
+    return next('/login');
+  }
+
+  // Trang chỉ dành cho khách 
+  if (to.meta.guestOnly && isAuthenticated) {
+    console.warn("CHẶN: Đã đăng nhập rồi, đá về Home");
     return next('/'); 
   }
 
-  if (token && !authStore.user) {
-    try {
-      await authStore.fetchUser();
-    } catch (e) {
-      // Nếu token hết hạn hoặc lỗi -> Xóa token và bắt đăng nhập lại
-      console.error("Token lỗi, đăng xuất...");
-      authStore.logout(); 
-      return next('/login');
-    }
-  }
-
-  // Nếu không vi phạm gì cả -> Cho đi tiếp
   next();
 });
 
+app.use(router)
 app.mount('#app')

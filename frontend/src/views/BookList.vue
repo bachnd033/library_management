@@ -57,7 +57,15 @@
                   </button>
                 </div>
 
-                <div v-else>
+                <div v-else class="d-flex align-items-center">
+                  <button 
+                    @click="bookStore.toggleWishlist(book)"
+                    class="btn btn-sm me-2 border"
+                    :class="bookStore.isInWishlist(book.id) ? 'btn-danger text-white' : 'btn-light text-danger'"
+                    title="Thêm vào yêu thích"
+                  >
+                    <i v-if="bookStore.isInWishlist(book.id)" class="fas fa-heart"></i> <i v-else class="far fa-heart"></i> </button>
+
                   <button 
                     @click="handleBorrow(book.id)" 
                     class="btn btn-success btn-sm"
@@ -85,8 +93,12 @@ const bookStore = useBookStore();
 const authStore = useAuthStore();
 const router = useRouter();
 
-onMounted(() => {
-  bookStore.fetchBooks();
+onMounted(async () => {
+  await bookStore.fetchBooks();
+  
+  if (authStore.user && authStore.user.role !== 'admin') {
+    await bookStore.fetchWishlist();
+  }
 });
 
 const handleDelete = async (bookId, bookTitle) => {
@@ -99,13 +111,14 @@ const handleDelete = async (bookId, bookTitle) => {
 };
 
 const handleBorrow = async (bookId) => {
-    // Hỏi xác nhận trước khi mượn
     if (!confirm('Bạn có chắc muốn mượn cuốn sách này?')) return;
 
     const result = await bookStore.borrowBook(bookId);
     
     if (result.success) {
         alert(result.message);
+        // Sau khi mượn thành công, cần tải lại sách để cập nhật số lượng tồn kho
+        bookStore.fetchBooks(); 
     } else {
         alert('Lỗi: ' + result.message);
     }
@@ -119,5 +132,12 @@ const handleBorrow = async (bookId) => {
   button:disabled {
     cursor: not-allowed;
     opacity: 0.7;
+  }
+  
+  .btn-danger, .btn-light {
+    transition: all 0.2s;
+  }
+  .btn-light.text-danger:hover {
+    background-color: #ffe6e6;
   }
 </style>

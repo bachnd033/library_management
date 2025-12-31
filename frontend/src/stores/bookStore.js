@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { BookService } from '@/services/BookService';
-import axios from 'axios';
+import api from '@/api/axios'; 
 
 export const useBookStore = defineStore('bookStore', {
     state: () => ({
@@ -12,17 +12,23 @@ export const useBookStore = defineStore('bookStore', {
         isLoading: false,
         error: null,
     }),
+    
+    getters: {
+        isInWishlist: (state) => (bookId) => {
+            if (!state.wishlist || !Array.isArray(state.wishlist)) {
+                return false; 
+            }
+            return state.wishlist.some((item) => item.id === bookId);
+        },
+    },
 
     actions: {
         async fetchBooks(page = 1) { 
             this.isLoading = true;
             this.error = null;
             try {
-                // Gọi service
                 const response = await BookService.getAllBooks({ page });
-                
                 this.books = response.data.data; 
-                
             } catch (err) {
                 this.error = 'Không thể tải danh sách sách.';
                 console.error(err);
@@ -35,7 +41,6 @@ export const useBookStore = defineStore('bookStore', {
             this.isLoading = true;
             try {
                 await BookService.deleteBook(id);
-                // Xóa khỏi danh sách hiện tại để không cần load lại trang
                 this.books = this.books.filter(book => book.id !== id);
                 return true;
             } catch (err) {
@@ -101,8 +106,6 @@ export const useBookStore = defineStore('bookStore', {
             this.isLoading = true;
             try {
                 await BookService.borrowBook(bookId);
-                
-                // Mượn thành công thì phải cập nhật lại danh sách để số lượng giảm đi
                 await this.fetchBooks();                
                 return { success: true, message: 'Mượn sách thành công!' };
             } catch (err) {
@@ -125,18 +128,12 @@ export const useBookStore = defineStore('bookStore', {
             }
         },
 
-        // Trả sách
         async returnBook(bookId) {
             this.isLoading = true;
             try {
                 await BookService.returnBook(bookId);
-                
-                // Xóa khỏi danh sách đang mượn
                 this.borrowedBooks = this.borrowedBooks.filter(item => item.book_id !== bookId);
-                
-                // Cập nhật lại list sách chính để hiển thị số lượng tồn kho mới
                 await this.fetchBooks(); 
-
                 return { success: true, message: 'Đã trả sách thành công.' };
             } catch (err) {
                 return { success: false, message: err.response?.data?.message || 'Lỗi trả sách' };
@@ -147,17 +144,48 @@ export const useBookStore = defineStore('bookStore', {
 
         async fetchWishlist() {
             try {
-                const res = await axios.get('/wishlist');
-                this.wishlist = res.data;
-            } catch (e) { console.error(e); }
+                const response = await api.get('/api/wishlist');
+
+                if (Array.isArray(response.data)) {
+                    this.wishlist = response.data;
+                } else if (response.data && Array.isArray(response.data.data)) {
+                    this.wishlist = response.data.data;
+                } else {
+                    this.wishlist = [];
+                }
+            } catch (error) {
+                console.error("Lỗi fetchWishlist:", error);
+                if (error.response && error.response.status === 401) {
+                    //
+                }
+            }
         },
 
-        async toggleWishlist(bookId) {
+        async toggleWishlist(input) {
             try {
-                await api.post('/wishlist/toggle', { book_id: bookId });
-                await this.fetchWishlist(); // Load lại danh sách mới
+                const bookId = (typeof input === 'object') ? input.id : input;
+                const bookObj = (typeof input === 'object') ? input : null;
+
+                await api.post('/api/wishlist/toggle', { book_id: bookId });
+                
+                // Cập nhật giao diện
+                if (bookObj) {
+                    if (this.isInWishlist(bookId)) {
+                        this.wishlist = this.wishlist.filter(item => item.id !== bookId);
+                    } else {
+                        this.wishlist.push(bookObj);
+                    }
+                } else {
+                    // Nếu chỉ có ID thì phải tải lại để lấy đủ thông tin
+                    await this.fetchWishlist();
+                }
+                
                 return true;
-            } catch (e) { return false; }
+            } catch (error) {
+                console.error("Lỗi toggle wishlist:", error);
+                await this.fetchWishlist(); // Sync lại nếu lỗi
+                return false;
+            }
         },
     }
 });

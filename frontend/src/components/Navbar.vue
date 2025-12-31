@@ -1,6 +1,5 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-    
     <div class="container">
       
       <router-link to="/" class="navbar-brand">
@@ -20,34 +19,94 @@
           <li class="nav-item">
             <router-link to="/books" class="nav-link" active-class="active">Quản lý Sách</router-link>
           </li>
-          </ul>
-
-        <ul class="navbar-nav">
-           <li class="nav-item">
-             <button @click="handleLogout" class="btn btn-light btn-sm">Đăng xuất</button>
-           </li>
         </ul>
+
+        <ul class="navbar-nav ms-auto align-items-center">
+            
+            <li v-if="authStore.isLoggedIn" class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="avatar-circle me-2">
+                        {{ userInitial }}
+                    </div>
+                    <span class="text-white fw-bold">{{ authStore.user?.name }}</span>
+                </a>
+                
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <li>
+                        <router-link to="/profile" class="dropdown-item">
+                            <i class="fas fa-user me-2"></i> Hồ sơ cá nhân
+                        </router-link>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button @click="handleLogout" class="dropdown-item text-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                        </button>
+                    </li>
+                </ul>
+            </li>
+
+            <li v-else class="nav-item d-flex align-items-center gap-2">
+                
+                <router-link to="/login" class="btn btn-light btn-sm fw-bold text-primary">
+                    Đăng nhập
+                </router-link>
+
+                <router-link to="/register" class="btn btn-light btn-sm fw-bold text-primary">
+                    Đăng ký
+                </router-link>
+
+            </li>
+
+        </ul>
+
       </div>
     </div>
   </nav>
 </template>
 
 <script setup>
+    import { computed } from 'vue';
     import { useAuthStore } from '@/stores/authStore';
     import { useRouter } from 'vue-router';
 
     const authStore = useAuthStore();
     const router = useRouter();
 
+    const userInitial = computed(() => {
+        if (authStore.user && authStore.user.name) {
+            return authStore.user.name.charAt(0).toUpperCase();
+        }
+        return 'U';
+    });
+
     const handleLogout = async () => {
-        // Gọi action logout từ store
         await authStore.logout();
+        router.push('/login'); 
     };
 </script>
 
 <style scoped>
     .navbar-brand {
-    font-weight: bold;
-    font-size: 1.4rem;
+        font-weight: bold;
+        font-size: 1.4rem;
+    }
+
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        background-color: white;
+        color: var(--bs-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1rem;
+        text-transform: uppercase;
+    }
+
+    .nav-item.dropdown .nav-link {
+        color: white !important;
     }
 </style>

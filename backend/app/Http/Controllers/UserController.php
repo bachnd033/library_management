@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Book;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -26,8 +26,30 @@ class UserController extends Controller
 
     // Lấy danh sách yêu thích
     public function getWishlist(Request $request) {
-        $books = $request->user()->wishlist;
-        return response()->json($books);
+
+        try {
+            // Lấy user đang đăng nhập
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
+            $wishlistBooks = $user->wishlist()->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $wishlistBooks
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Lỗi : ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Không thể lấy danh sách yêu thích. Lỗi: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // Thêm/Xóa yêu thích 

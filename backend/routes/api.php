@@ -39,3 +39,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Thêm/Xóa yêu thích
     Route::post('/wishlist/toggle', [UserController::class, 'toggleWishlist']);
 });
+

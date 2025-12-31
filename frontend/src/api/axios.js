@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: 'http://localhost:8000', 
+    withCredentials: true, 
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-    },
-    withCredentials: true, 
+        'X-Requested-With': 'XMLHttpRequest', 
+    }
 });
 
 function getCookie(name) {
@@ -15,7 +15,7 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
-//Tự lấy cookie XSRF-TOKEN và gắn vào header X-XSRF-TOKEN
+
 api.interceptors.request.use(config => {
     const token = getCookie('XSRF-TOKEN');
     

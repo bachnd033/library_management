@@ -2,34 +2,34 @@ import api from '@/api/axios';
 
 export const BookService = {
     getAllBooks() {
-        return api.get('/books');
+        return api.get('/api/books');
     },
 
     getBook(id) {
-        return api.get(`/books/${id}`);
+        return api.get(`/api/books/${id}`);
     },
 
     createBook(data) {
-        return api.post('/books', data);
+        return api.post('/api/books', data);
     },
 
     updateBook(id, data) {
-        return api.put(`/books/${id}`, data);
+        return api.put(`/api/books/${id}`, data);
     },
 
     deleteBook(id) {
-        return api.delete(`/books/${id}`);
+        return api.delete(`/api/books/${id}`);
     },
 
     borrowBook(bookId) {
-        return api.post('/borrow', { book_id: bookId });
+        return api.post('/api/borrow', { book_id: bookId });
     },
 
     getMyLoans() {
-        return api.get('/my-loans');
+        return api.get('/api/my-loans'); 
     },
 
     returnBook(bookId) {
-        return api.post('/return', { book_id: bookId });
+        return api.post('/api/return', { book_id: bookId });
     },
 };

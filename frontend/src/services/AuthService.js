@@ -2,15 +2,15 @@ import api from '@/api/axios';
 
 export const AuthService = {
     login(credentials) {
-        return api.post('/login', credentials);
+        return api.post('/api/login', credentials);
     },
     register(userInfo) {
-        return api.post('/register', userInfo); 
+        return api.post('/api/register', userInfo); 
     },
     logout() {
-        return api.post('/logout');
+        return api.post('/api/logout');
     },
     getUser() {
-        return api.get('/user');
+        return api.get('/api/user');
     }
 };
