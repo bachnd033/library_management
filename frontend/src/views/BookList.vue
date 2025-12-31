@@ -112,6 +112,40 @@
             </tr>
           </tbody>
         </table>
+
+        <nav v-if="bookStore.pagination.last_page > 1" aria-label="Page navigation" class="d-flex justify-content-center mt-4">
+          <ul class="pagination shadow-sm">
+            
+            <li class="page-item" :class="{ disabled: bookStore.pagination.current_page === 1 }">
+              <button class="page-link" @click="changePage(bookStore.pagination.current_page - 1)" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </button>
+            </li>
+
+            <li 
+                v-for="page in bookStore.pagination.last_page" 
+                :key="page" 
+                class="page-item"
+                :class="{ active: page === bookStore.pagination.current_page }"
+            >
+                <button class="page-link" @click="changePage(page)">
+                    {{ page }}
+                </button>
+            </li>
+
+            <li class="page-item" :class="{ disabled: bookStore.pagination.current_page === bookStore.pagination.last_page }">
+              <button class="page-link" @click="changePage(bookStore.pagination.current_page + 1)" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+        
+        <div class="text-center text-muted small mt-2" v-if="bookStore.pagination.total > 0">
+            Hiển thị trang {{ bookStore.pagination.current_page }} trên tổng số {{ bookStore.pagination.last_page }} trang 
+            (Tổng {{ bookStore.pagination.total }} sách)
+        </div>
+
       </div>
     </div>
   </div>
@@ -175,6 +209,21 @@ const handleBorrow = async (bookId) => {
 
 const handleToggleWishlist = async (book) => {
     await bookStore.toggleWishlist(book);
+};
+
+//Logic phân trang
+const changePage = async (page) => {
+    // Kiểm tra trang hợp lệ
+    if (page < 1 || page > bookStore.pagination.last_page || page === bookStore.pagination.current_page) {
+        return;
+    }
+
+    await bookStore.fetchBooks({
+        page: page,
+        search: searchQuery.value 
+    });
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 </script>
 
