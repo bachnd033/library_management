@@ -153,22 +153,36 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useBookStore } from '@/stores/bookStore';
 import { useAuthStore } from '@/stores/authStore'; 
 
 const bookStore = useBookStore();
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 // Biến lưu từ khóa tìm kiếm
 const searchQuery = ref('');
 
 onMounted(async () => {
-  // Tải danh sách sách
-  await bookStore.fetchBooks();
+  // Kiểm tra xem trên URL có tham số 'search' không
+  const urlKeyword = route.query.search; 
   
-  // Nếu là user thường thì tải thêm wishlist
+  if (urlKeyword) {  
+      // Gán từ khóa vào ô input
+      searchQuery.value = urlKeyword; 
+      
+      // Gọi API tìm kiếm
+      await bookStore.fetchBooks({ 
+          search: urlKeyword, 
+          page: 1 
+      });
+  } else {
+      await bookStore.fetchBooks();
+  }
+  
+  // Tải wishlist
   if (authStore.user && authStore.user.role !== 'admin') {
     await bookStore.fetchWishlist();
   }
