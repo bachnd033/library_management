@@ -2,107 +2,133 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Loan;
 use App\Models\Book;
-use App\Models\Loan; 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LoanController extends Controller
 {
+    //User tạo yêu cầu mượn
     public function borrow(Request $request)
     {
-        $request->validate([
-            'book_id' => 'required|exists:books,id',
-            // 'due_date' => 'required|date|after:today' 
+        $request->validate(['book_id' => 'required|exists:books,id']);
+
+        // Kiểm tra xem user có đang mượn cuốn này không
+        $exists = Loan::where('user_id', $request->user()->id)
+                      ->where('book_id', $request->book_id)
+                      ->whereIn('status', ['pending', 'approved'])
+                      ->exists();
+
+        if ($exists) {
+            return response()->json(['message' => 'Bạn đã gửi yêu cầu hoặc đang mượn sách này rồi.'], 400);
+        }
+
+        Loan::create([
+            'user_id' => $request->user()->id,
+            'book_id' => $request->book_id,
+            'status' => 'pending',
+            'loan_date' => now(),
+            'due_date' => now()->addDays(14), // Mặc định 14 ngày
         ]);
 
-        $book = Book::find($request->book_id);
-
-        // Kiểm tra xem còn sách để mượn không
-        if ($book->available_copies < 1) {
-            return response()->json(['message' => 'Sách này đã hết hàng.'], 400);
-        }
-
-        // Kiểm tra xem user này có đang mượn cuốn này mà chưa trả không 
-        $existingLoan = Loan::where('user_id', $request->user()->id)
-                            ->where('book_id', $book->id)
-                            ->whereNull('returned_at')
-                            ->first();
-        if ($existingLoan) {
-             return response()->json(['message' => 'Bạn đang mượn sách này rồi.'], 400);
-        }
-
-        // Thực hiện giao dịch (Transaction) để đảm bảo an toàn dữ liệu
-        DB::beginTransaction();
-        try {
-            // Tạo phiếu mượn
-            Loan::create([
-                'user_id' => $request->user()->id, // Lấy ID user đang đăng nhập
-                'book_id' => $book->id,
-                'borrowed_at' => now(),
-                'due_date' => now()->addDays(14), // Mặc định cho mượn 14 ngày
-            ]);
-
-            // Trừ số lượng sách trong kho
-            $book->decrement('available_copies');
-
-            DB::commit();
-
-            return response()->json(['message' => 'Mượn sách thành công!']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Lỗi hệ thống, vui lòng thử lại.'], 500);
-        }
+        return response()->json(['message' => 'Đã gửi yêu cầu mượn sách. Vui lòng chờ Admin duyệt.']);
     }
 
-    // Xem sách đang mượn
-    public function myLoans(Request $request)
-    {
-        // Lấy các phiếu mượn của user hiện tại mà chưa trả (returned_at là null)
-        $loans = Loan::with('book') // Load kèm thông tin sách
-            ->where('user_id', $request->user()->id)
-            ->whereNull('returned_at')
-            ->get();
-
-        return response()->json([
-            'data' => $loans
-        ]);
-    }
-
-    // Trả sách
+    // User trả sách 
     public function returnBook(Request $request)
     {
-        $request->validate([
-            'book_id' => 'required|exists:books,id',
-        ]);
+        $request->validate(['book_id' => 'required']);
 
-        // Tìm phiếu mượn đang hoạt động (chưa trả)
         $loan = Loan::where('user_id', $request->user()->id)
-            ->where('book_id', $request->book_id)
-            ->whereNull('returned_at')
-            ->first();
+                    ->where('book_id', $request->book_id)
+                    ->where('status', 'approved') // Chỉ trả được sách đang mượn
+                    ->first();
 
         if (!$loan) {
-            return response()->json(['message' => 'Bạn không mượn cuốn sách này hoặc đã trả rồi.'], 400);
+            return response()->json(['message' => 'Không tìm thấy phiếu mượn hợp lệ.'], 404);
         }
 
-        DB::beginTransaction();
-        try {
-            // Cập nhật ngày trả
+        DB::transaction(function () use ($loan) {
+            // Cập nhật trạng thái
             $loan->update([
-                'returned_at' => now()
+                'status' => 'returned',
+                'return_date' => now()
             ]);
 
-            // Cộng lại số lượng sách vào kho
-            $book = Book::find($request->book_id);
-            $book->increment('available_copies');
+            // Cộng lại số lượng tồn kho
+            $loan->book()->increment('available_copies');
+        });
 
-            DB::commit();
+        return response()->json(['message' => 'Trả sách thành công!']);
+    }
 
-            return response()->json(['message' => 'Trả sách thành công!']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Lỗi hệ thống khi trả sách.'], 500);
+    // ADMIN 
+
+    // Lấy tất cả danh sách mượn 
+    public function index(Request $request)
+    {
+        // Cho phép lọc theo status 
+        $query = Loan::with(['user', 'book']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
+
+        return response()->json($query->latest()->get());
+    }
+
+    // Admin duyệt phiếu mượn
+    public function approve($id)
+    {
+        $loan = Loan::findOrFail($id);
+
+        if ($loan->status !== 'pending') {
+            return response()->json(['message' => 'Phiếu này không ở trạng thái chờ duyệt.'], 400);
+        }
+
+        // Kiểm tra tồn kho trước khi duyệt
+        if ($loan->book->available_copies < 1) {
+            return response()->json(['message' => 'Sách này đã hết hàng, không thể duyệt.'], 400);
+        }
+
+        DB::transaction(function () use ($loan) {
+            $loan->update(['status' => 'approved']);
+            $loan->book()->decrement('available_copies');
+        });
+
+        return response()->json(['message' => 'Đã duyệt phiếu mượn.']);
+    }
+
+    // Admin từ chối phiếu mượn
+    public function reject($id)
+    {
+        $loan = Loan::findOrFail($id);
+        if ($loan->status !== 'pending') return response()->json(['message' => 'Sai trạng thái.'], 400);
+        
+        $loan->update(['status' => 'rejected']);
+        return response()->json(['message' => 'Đã từ chối phiếu mượn.']);
+    }
+
+    // Admin cập nhật ngày trả
+    public function updateDueDate(Request $request, $id)
+    {
+        $request->validate(['due_date' => 'required|date']);
+        
+        $loan = Loan::findOrFail($id);
+        $loan->update(['due_date' => $request->due_date]);
+
+        return response()->json(['message' => 'Đã cập nhật ngày trả.']);
+    }
+    
+    // Lấy danh sách cá nhân user
+    public function myLoans(Request $request)
+    {
+        // Lấy tất cả trạng thái để hiển thị lịch sử
+        $loans = Loan::with('book')
+                     ->where('user_id', $request->user()->id)
+                     ->latest()
+                     ->get();
+        return response()->json(['data' => $loans]);
     }
 }

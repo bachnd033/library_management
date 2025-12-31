@@ -3,7 +3,7 @@
     <div class="container">
       
       <router-link to="/" class="navbar-brand">
-        📚 Quản Lý Thư Viện
+         Quản Lý Thư Viện
       </router-link>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,12 +32,26 @@
                 </a>
                 
                 <ul class="dropdown-menu dropdown-menu-end shadow">
-                    <li>
+                    <li v-if="authStore.user?.role === 'user'">
                         <router-link to="/profile" class="dropdown-item">
                             <i class="fas fa-user me-2"></i> Hồ sơ cá nhân
                         </router-link>
                     </li>
+
+                    <li v-if="authStore.user?.role === 'admin'">
+                        <h6 class="dropdown-header text-uppercase small text-muted">Quản trị</h6>
+                        
+                        <router-link to="/admin/loans" class="dropdown-item">
+                            <i class="me-2 text-primary"></i> Duyệt phiếu mượn
+                        </router-link>
+
+                        <router-link to="/books/create" class="dropdown-item">
+                            <i class="me-2 text-success"></i> Nhập sách mới
+                        </router-link>
+                    </li>
+
                     <li><hr class="dropdown-divider"></li>
+
                     <li>
                         <button @click="handleLogout" class="dropdown-item text-danger">
                             <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất

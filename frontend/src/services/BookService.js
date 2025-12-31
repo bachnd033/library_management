@@ -1,6 +1,7 @@
 import api from '@/api/axios'; 
 
 export const BookService = {
+    // --- User ----
     getAllBooks(params) {
         return api.get('/api/books', { params: params });
     },
@@ -32,4 +33,21 @@ export const BookService = {
     returnBook(bookId) {
         return api.post('/api/return', { book_id: bookId });
     },
+
+    // --- Admin ---
+    getAllLoans(status = '') { 
+        return api.get('/api/admin/loans', { params: { status } }); 
+    },
+
+    approveLoan(loanId) { 
+        return api.post(`/api/admin/loans/${loanId}/approve`); 
+    },
+
+    rejectLoan(loanId) { 
+        return api.post(`/api/admin/loans/${loanId}/reject`); 
+    },
+    
+    updateDueDate(loanId, newDate) { 
+        return api.put(`/api/admin/loans/${loanId}/due-date`, { due_date: newDate }); 
+    }
 };

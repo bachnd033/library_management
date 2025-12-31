@@ -21,15 +21,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Quản lý sách 
     Route::apiResource('books', BookController::class);
 
-    //Mượn sách
-    Route::post('/borrow', [LoanController::class, 'borrow']);
-
-    // Xem sách đang mượn
-    Route::get('/my-loans', [LoanController::class, 'myLoans']); 
-
-    // Trả sách
-    Route::post('/return', [LoanController::class, 'returnBook']); 
-
     // Cập nhật hồ sơ người dùng
     Route::put('/profile', [UserController::class, 'updateProfile']);
 
@@ -38,5 +29,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Thêm/Xóa yêu thích
     Route::post('/wishlist/toggle', [UserController::class, 'toggleWishlist']);
+
+    // Quản lý mượn trả sách
+    Route::post('/borrow', [LoanController::class, 'borrow']);
+    Route::post('/return', [LoanController::class, 'returnBook']);
+    Route::get('/my-loans', [LoanController::class, 'myLoans']);
+
+    // Admin route
+    Route::get('/admin/loans', [LoanController::class, 'index']); 
+    Route::post('/admin/loans/{id}/approve', [LoanController::class, 'approve']);
+    Route::post('/admin/loans/{id}/reject', [LoanController::class, 'reject']);
+    Route::put('/admin/loans/{id}/due-date', [LoanController::class, 'updateDueDate']);
 });
 

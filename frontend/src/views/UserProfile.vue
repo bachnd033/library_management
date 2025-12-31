@@ -4,8 +4,9 @@
       <div class="col-md-3 mb-4">
         <div class="card shadow-sm">
           <div class="card-body text-center">
-            <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
-              {{ authStore.user?.name.charAt(0).toUpperCase() }}
+            <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                 style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+              {{ userInitial }}
             </div>
             <h5 class="card-title">{{ authStore.user?.name }}</h5>
             <p class="text-muted small">{{ authStore.user?.email }}</p>
@@ -31,56 +32,93 @@
         <div class="card shadow-sm p-4">
           
           <div v-if="activeTab === 'info'">
-            <h4 class="mb-4">Chỉnh sửa thông tin</h4>
+            <h4 class="mb-4 text-primary border-bottom pb-2">Chỉnh sửa thông tin</h4>
             <form @submit.prevent="handleUpdateProfile">
               <div class="mb-3">
-                <label class="form-label">Họ và tên</label>
+                <label class="form-label fw-bold">Họ và tên</label>
                 <input v-model="form.name" type="text" class="form-control" required>
               </div>
               <div class="mb-3">
-                <label class="form-label">Đổi mật khẩu (Bỏ trống nếu không đổi)</label>
+                <label class="form-label fw-bold">Đổi mật khẩu <span class="text-muted fw-normal">(Bỏ trống nếu không đổi)</span></label>
                 <input v-model="form.password" type="password" class="form-control" placeholder="Nhập mật khẩu mới">
               </div>
               <div class="mb-3">
-                <label class="form-label">Nhập lại mật khẩu mới</label>
+                <label class="form-label fw-bold">Nhập lại mật khẩu mới</label>
                 <input v-model="form.password_confirmation" type="password" class="form-control">
               </div>
-              <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Lưu thay đổi
+              </button>
             </form>
           </div>
 
           <div v-if="activeTab === 'loans'">
-             <h4 class="mb-4">Sách đang mượn</h4>
-             <div v-if="bookStore.borrowedBooks.length === 0" class="alert alert-secondary">
-                Bạn không mượn cuốn nào.
+             <h4 class="mb-4 text-primary border-bottom pb-2">Sách đang mượn</h4>
+             
+             <div v-if="bookStore.isLoading" class="text-center py-3">
+                <div class="spinner-border text-primary" role="status"></div>
              </div>
-             <table v-else class="table">
-                <thead>
-                    <tr><th>Sách</th><th>Hạn trả</th><th>Thao tác</th></tr>
-                </thead>
-                <tbody>
-                    <tr v-for="loan in bookStore.borrowedBooks" :key="loan.id">
-                        <td>{{ loan.book?.title }}</td>
-                        <td class="text-danger">{{ new Date(loan.due_date).toLocaleDateString('vi-VN') }}</td>
-                        <td>
-                            <button @click="handleReturn(loan.book_id)" class="btn btn-sm btn-outline-primary">Trả sách</button>
-                        </td>
-                    </tr>
-                </tbody>
-             </table>
+
+             <div v-else-if="bookStore.borrowedBooks.length === 0" class="alert alert-light text-center py-4 border">
+                <i class="fas fa-box-open fa-2x mb-3 text-muted"></i>
+                <p>Bạn chưa có lịch sử mượn sách nào.</p>
+                <router-link to="/books" class="btn btn-outline-primary btn-sm">Tìm sách ngay</router-link>
+             </div>
+
+             <div v-else class="table-responsive">
+               <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                      <tr>
+                        <th>Sách</th>
+                        <th>Trạng thái</th> <th>Hạn trả</th>
+                        <th class="text-end">Thao tác</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr v-for="loan in bookStore.borrowedBooks" :key="loan.id">
+                          <td class="fw-medium">{{ loan.book?.title || 'Sách đã bị xóa' }}</td>
+                          <td>
+                              <span v-if="loan.status === 'pending'" class="badge bg-warning text-dark">Chờ duyệt</span>
+                              <span v-else-if="loan.status === 'approved'" class="badge bg-success">Đang mượn</span>
+                              <span v-else-if="loan.status === 'returned'" class="badge bg-secondary">Đã trả</span>
+                              <span v-else class="badge bg-danger">Đã hủy</span>
+                          </td>
+                          <td>
+                            <span v-if="loan.status === 'returned'" class="text-muted small">
+                                Trả lúc: {{ formatDate(loan.return_date) }}
+                            </span>
+                            <span v-else :class="isOverdue(loan.due_date) ? 'text-danger fw-bold' : ''">
+                                {{ formatDate(loan.due_date) }}
+                            </span>
+                          </td>
+                          <td class="text-end">
+                              <button 
+                                  v-if="loan.status === 'approved'"
+                                  @click="handleReturn(loan.book_id)" 
+                                  class="btn btn-outline-primary btn-sm"
+                              >
+                                  Trả sách
+                              </button>
+                          </td>
+                      </tr>
+                  </tbody>
+               </table>
+             </div>
           </div>
 
           <div v-if="activeTab === 'wishlist'">
-            <h4 class="mb-4">Danh sách yêu thích</h4>
-            <div v-if="bookStore.wishlist.length === 0" class="text-muted">Chưa có sách yêu thích.</div>
+            <h4 class="mb-4 text-primary border-bottom pb-2">Danh sách yêu thích</h4>
+            <div v-if="bookStore.wishlist.length === 0" class="text-center text-muted py-4">
+                Chưa có sách yêu thích.
+            </div>
             <div class="row g-3">
                 <div v-for="book in bookStore.wishlist" :key="book.id" class="col-md-6">
-                    <div class="border rounded p-3 d-flex justify-content-between align-items-center">
+                    <div class="border rounded p-3 d-flex justify-content-between align-items-center shadow-sm h-100">
                         <div>
-                            <h6 class="mb-1">{{ book.title }}</h6>
-                            <small class="text-muted">{{ book.author }}</small>
+                            <h6 class="mb-1 fw-bold text-dark">{{ book.title }}</h6>
+                            <small class="text-muted"><i class="fas fa-user-edit me-1"></i>{{ book.author }}</small>
                         </div>
-                        <button @click="removeFromWishlist(book)" class="btn btn-sm btn-danger">
+                        <button @click="removeFromWishlist(book)" class="btn btn-sm btn-outline-danger" title="Xóa">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -95,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useBookStore } from '@/stores/bookStore';
 import { useRouter } from 'vue-router'; 
@@ -112,12 +150,28 @@ const form = ref({
   password_confirmation: ''
 });
 
+// Chữ cái đầu tên người dùng
+const userInitial = computed(() => {
+    return authStore.user?.name ? authStore.user.name.charAt(0).toUpperCase() : 'U';
+});
+
 onMounted(async () => {
-    // Đảm bảo dữ liệu tải xong mới làm việc khác
+    // Gọi API lấy dữ liệu khi vào trang
     await bookStore.fetchBorrowedBooks();
     await bookStore.fetchWishlist();
-
 });
+
+// Hàm format ngày tháng 
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('vi-VN');
+};
+
+// Hàm kiểm tra quá hạn -> bôi đỏ ngày trả
+const isOverdue = (dateString) => {
+    if (!dateString) return false;
+    return new Date(dateString) < new Date();
+};
 
 const handleUpdateProfile = async () => {
     const result = await authStore.updateProfile(form.value);
@@ -129,8 +183,9 @@ const handleUpdateProfile = async () => {
 };
 
 const handleReturn = async (bookId) => {
-    if(confirm('Trả sách nhé?')) {
-        await bookStore.returnBook(bookId);
+    if(confirm('Bạn có chắc muốn trả cuốn sách này không?')) {
+        const result = await bookStore.returnBook(bookId);
+        if(result.message) alert(result.message);
     }
 };
 
@@ -139,8 +194,9 @@ const removeFromWishlist = async (book) => {
         await bookStore.toggleWishlist(book);
     }
 };
-const handleLogout = () => {
-    authStore.logout();
+
+const handleLogout = async () => {
+    await authStore.logout();
     router.push('/login');
 };
 </script>
