@@ -23,12 +23,28 @@ export const useBookStore = defineStore('bookStore', {
     },
 
     actions: {
-        async fetchBooks(page = 1) { 
+        async fetchBooks(params = {}) { 
             this.isLoading = true;
             this.error = null;
             try {
-                const response = await BookService.getAllBooks({ page });
-                this.books = response.data.data; 
+                // Mặc định page là 1 
+                const payload = {
+                    page: params.page || 1,
+                    search: params.search || '' // Thêm tham số search
+                };
+
+                // Gọi service
+                const response = await BookService.getAllBooks(payload);
+                
+                this.books = response.data.data;
+                
+                // Lưu lại pagination 
+                this.pagination = {
+                    current_page: response.data.current_page,
+                    last_page: response.data.last_page,
+                    total: response.data.total
+                };
+                
             } catch (err) {
                 this.error = 'Không thể tải danh sách sách.';
                 console.error(err);

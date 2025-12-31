@@ -1,8 +1,8 @@
 import api from '@/api/axios'; 
 
 export const BookService = {
-    getAllBooks() {
-        return api.get('/api/books');
+    getAllBooks(params) {
+        return api.get('/api/books', { params: params });
     },
 
     getBook(id) {

@@ -23,11 +23,21 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
-        // Thêm logic tìm kiếm & lọc (search, filter)
-        $books = Book::paginate(15);
-        
-        // Sử dụng Resource Collection để trả về dữ liệu đã được định dạng
-        return BookResource::collection($books);
+       // Tạo Query Builder
+        $query = Book::query();
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            
+            $query->where(function($q) use ($keyword) {
+                $q->where('title', 'like', '%' . $keyword . '%')
+                ->orWhere('author', 'like', '%' . $keyword . '%');
+            });
+        }
+
+        $books = $query->latest()->paginate(10);
+
+        return response()->json($books);
     }
 
     /**
@@ -78,9 +88,6 @@ class BookController extends Controller
             'total_copies' => 'sometimes|integer|min:0',
         ]);
 
-        // TODO: 
-        // total_copies thay đổi, available_copies phải được tính toán lại
-        // (dựa trên số sách đang được mượn).
 
         $book->update($validated);
 
@@ -92,10 +99,6 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
-        // TODO: Xử lý logic nghiệp vụ quan trọng
-        // KHÔNG cho phép xóa sách nếu available_copies < total_copies
-        // (nghĩa là đang có độc giả mượn).
-
 
         $book->delete();
 

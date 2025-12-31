@@ -55,25 +55,42 @@
           <router-link to="/books" class="btn btn-outline-primary btn-sm">Xem tất cả &rarr;</router-link>
         </div>
 
-        <div class="row g-4">
+        <div v-if="bookStore.isLoading" class="text-center py-5">
+           <div class="spinner-border text-primary" role="status"></div>
+           <p class="mt-2 text-muted">Đang tải sách mới...</p>
+        </div>
+
+        <div v-else-if="featuredBooks.length === 0" class="text-center py-5 text-muted">
+            Chưa có sách nào được cập nhật.
+        </div>
+
+        <div v-else class="row g-4">
           <div v-for="book in featuredBooks" :key="book.id" class="col-6 col-md-3">
             <div class="card h-100 shadow-sm border-0 book-card">
-              <div class="card-img-top bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 200px;">
-                <span>Ảnh bìa</span>
+              <div class="card-img-top bg-secondary text-white d-flex justify-content-center align-items-center position-relative overflow-hidden" style="height: 200px;">
+                <i class="fas fa-book fa-3x opacity-50"></i>
+                <div v-if="book.available_copies < 1" class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 small m-2 rounded">
+                    Hết hàng
+                </div>
               </div>
+              
               <div class="card-body d-flex flex-column">
                 <h5 class="card-title text-truncate" :title="book.title">{{ book.title }}</h5>
-                <p class="card-text text-muted small mb-2">{{ book.author }}</p>
+                <p class="card-text text-muted small mb-2"><i class="fas fa-user-edit me-1"></i> {{ book.author }}</p>
                 <div class="mt-auto d-flex justify-content-between align-items-center">
                   <span class="badge bg-light text-dark border">{{ book.category }}</span>
                 </div>
               </div>
-              <div class="card-footer bg-transparent border-top-0">
-                <button @click="router.push(`/books/edit/${book.id}`)" class="btn btn-primary btn-sm w-100">Chi tiết</button>
+              
+              <div class="card-footer bg-transparent border-top-0 pt-0">
+                 <button @click="router.push('/books')" class="btn btn-primary btn-sm w-100">
+                    Xem chi tiết
+                 </button>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </section>
 
@@ -83,44 +100,43 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useBookStore } from '@/stores/bookStore'; 
 import Footer from '@/components/Footer.vue';
 
 const router = useRouter();
+const bookStore = useBookStore(); 
 const searchQuery = ref('');
 
-const featuredBooks = ref([
-  { id: 1, title: 'Nhà Giả Kim', author: 'Paulo Coelho', category: 'Văn học' },
-  { id: 2, title: 'Đắc Nhân Tâm', author: 'Dale Carnegie', category: 'Kỹ năng' },
-  { id: 3, title: 'Sapiens: Lược Sử Loài Người', author: 'Yuval Noah Harari', category: 'Lịch sử' },
-  { id: 4, title: 'Clean Code', author: 'Robert C. Martin', category: 'Công nghệ' },
-]);
+onMounted(async () => {
+    await bookStore.fetchBooks();
+});
 
-// const handleSearch = () => {
-//   if (searchQuery.value.trim()) {
-//     router.push({ name: 'BookList', query: { search: searchQuery.value } });
-//   }
-// };
-// </script>
+const featuredBooks = computed(() => {
+    // Nếu chưa có sách thì trả về mảng rỗng
+    if (!bookStore.books) return [];
+    // Cắt lấy 4 phần tử đầu tiên
+    return bookStore.books.slice(0, 4);
+});
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    router.push({ 
+        path: '/books', 
+        query: { search: searchQuery.value } 
+    });
+  }
+};
+</script>
 
 <style scoped>
 .hero-section {
-  background-image: url('https://images.unsplash.com/photo-1507842217121-9e96c885ee3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1507842217121-9e96c885ee3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
   background-size: cover;
   background-position: center;
   height: 500px;
   position: relative;
-}
-
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6); 
-  z-index: 0;
 }
 
 .z-index-1 {
@@ -131,13 +147,17 @@ const featuredBooks = ref([
   max-width: 600px;
 }
 
-/* Hiệu ứng hover cho card sách */
 .book-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
 }
 
 .book-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-img-top {
+    background-color: #6c757d; 
 }
 </style>
