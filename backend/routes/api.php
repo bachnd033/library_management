@@ -5,10 +5,17 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ForumController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/register', [AuthController::class, 'register']);
+
+Route::get('/forum/categories', [ForumController::class, 'getCategories']);
+
+Route::get('/forum/posts', [ForumController::class, 'getPosts']);
+
+Route::get('/forum/posts/{id}', [ForumController::class, 'getPostDetail']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     
@@ -49,5 +56,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/admin/loans/{id}/approve', [LoanController::class, 'approve']);
     Route::post('/admin/loans/{id}/reject', [LoanController::class, 'reject']);
     Route::put('/admin/loans/{id}/due-date', [LoanController::class, 'updateDueDate']);
+
+    // Đăng bài viết mới
+    Route::post('/forum/posts', [ForumController::class, 'createPost']);
+    
+    // Gửi bình luận cho bài viết ID
+    Route::post('/forum/posts/{id}/comments', [ForumController::class, 'createComment']);
+    
+    // Xóa bài viết
+    Route::delete('/forum/posts/{id}', [ForumController::class, 'deletePost']);
 });
 
