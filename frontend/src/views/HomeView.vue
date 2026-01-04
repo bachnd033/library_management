@@ -166,7 +166,7 @@ const handleBorrow = async (book) => {
 
 <style scoped>
 .hero-section {
-  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1507842217121-9e96c885ee3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../assets/hero-image.png');
   background-size: cover;
   background-position: center;
   height: 500px;
