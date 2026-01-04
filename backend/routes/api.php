@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\DashboardController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -81,6 +82,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Lấy bài viết nổi bật
     Route::get('/forum/featured', [ForumController::class, 'getFeaturedPosts']);
+
+    // Thống kê Dashboard Admin
+    Route::get('/admin/dashboard', [DashboardController::class, 'getAdminStats']);
 });
 
 

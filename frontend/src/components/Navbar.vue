@@ -59,6 +59,10 @@
                         <router-link to="/admin/forum/categories" class="dropdown-item">
                             <i class="me-2 text-success"></i> Quản lý chuyên mục
                         </router-link>
+
+                        <router-link to="/admin/dashboard" class="dropdown-item">
+                            <i class="me-2 text-success"></i> Thống kê
+                        </router-link>
                     </li>
 
                     <li><hr class="dropdown-divider"></li>

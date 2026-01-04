@@ -15,6 +15,7 @@ import ForumCreate from '../views/forum/ForumCreate.vue'
 import ForumDetail from '../views/forum/ForumDetail.vue'
 import AdminCategories from '../views/forum/AdminCategories.vue'
 import MyPosts from '../views/forum/MyPosts.vue'
+import AdminDashboard from '../views/admin/AdminDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -141,6 +142,13 @@ const router = createRouter({
       name: 'MyPosts',
       component: MyPosts,
       meta: { requiresAuth: true }
+  },
+
+  {
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: AdminDashboard,
+    meta: { requiresAuth: true, role: 'admin' }
   },
     // {
     //   path: '/about',
