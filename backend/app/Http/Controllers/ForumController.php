@@ -141,4 +141,17 @@ class ForumController extends Controller
         $comment->delete();
         return response()->json(['message' => 'Đã xóa bình luận']);
     }
+
+    // Lấy danh sách bài viết của chính mình
+    public function getMyPosts(Request $request) {
+        $user = $request->user();
+
+        $posts = ForumPost::where('user_id', $user->id)
+                          ->with(['category']) 
+                          ->withCount('comments')
+                          ->orderBy('created_at', 'desc')
+                          ->paginate(10);
+
+        return response()->json($posts);
+    }
 }

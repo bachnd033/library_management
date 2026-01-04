@@ -14,6 +14,7 @@ import ForumHome from '../views/forum/ForumHome.vue'
 import ForumCreate from '../views/forum/ForumCreate.vue'
 import ForumDetail from '../views/forum/ForumDetail.vue'
 import AdminCategories from '../views/forum/AdminCategories.vue'
+import MyPosts from '../views/forum/MyPosts.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -108,33 +109,39 @@ const router = createRouter({
     },
 
     {
-        path: '/forum',
-        name: 'ForumHome',
-        component: ForumHome,
-        meta: { requiresAuth: true } 
+      path: '/forum',
+      name: 'ForumHome',
+      component: ForumHome,
+      meta: { requiresAuth: true } 
     },
 
     {
-        path: '/forum/create',
-        name: 'ForumCreate',
-        component: ForumCreate,
-        meta: { requiresAuth: true }
+      path: '/forum/create',
+      name: 'ForumCreate',
+      component: ForumCreate,
+      meta: { requiresAuth: true }
     },
 
     {
-        path: '/forum/:id',
-        name: 'ForumDetail',
-        component: ForumDetail,
-        meta: { requiresAuth: true }
+      path: '/forum/:id',
+      name: 'ForumDetail',
+      component: ForumDetail,
+      meta: { requiresAuth: true }
     },
 
     {
-        path: '/admin/forum/categories',
-        name: 'AdminForumCategories',
-        component: AdminCategories,
-        meta: { requiresAuth: true, role: 'admin' }
+      path: '/admin/forum/categories',
+      name: 'AdminForumCategories',
+      component: AdminCategories,
+      meta: { requiresAuth: true, role: 'admin' }
     },
 
+    {
+      path: '/forum/my-posts',
+      name: 'MyPosts',
+      component: MyPosts,
+      meta: { requiresAuth: true }
+  },
     // {
     //   path: '/about',
     //   name: 'about',

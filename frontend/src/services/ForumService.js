@@ -30,12 +30,16 @@ export default {
     deleteCategory(id) {
         return api.delete(`${RESOURCE}/categories/${id}`);
     },
-
+    
     deleteComment(commentId) {
         return api.delete(`${RESOURCE}/comments/${commentId}`);
     },
-    
+
     deletePost(id) {
         return api.delete(`${RESOURCE}/posts/${id}`);
+    },
+    
+    getMyPosts(params) {
+        return api.get(`${RESOURCE}/my-posts`, { params });
     },
 };

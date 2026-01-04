@@ -2,11 +2,17 @@
   <div class="container mt-4">
     <div class="row">
       <div class="col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center">
             <h2 class="text-primary"><i class="fas fa-comments me-2"></i>Diễn Đàn Thảo Luận</h2>
-            <router-link to="/forum/create" class="btn btn-success">
-                <i class="fas fa-plus-circle me-1"></i> Đăng bài mới
-            </router-link>
+            <div>
+                <router-link to="/forum/my-posts" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-list-alt me-1"></i> Bài của tôi
+                </router-link>
+            
+                <router-link to="/forum/create" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-1"></i> Đăng bài
+                </router-link>
+            </div>
         </div>
 
         <div class="input-group mb-4 shadow-sm">

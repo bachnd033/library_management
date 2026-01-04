@@ -4,6 +4,7 @@ import forumService from '@/services/forumService';
 export const useForumStore = defineStore('forum', {
     state: () => ({
         posts: [],
+        myPosts: [],
         categories: [],
         currentPost: null, 
         isLoading: false,
@@ -70,7 +71,25 @@ export const useForumStore = defineStore('forum', {
         async removePost(postId) {
             await forumService.deletePost(postId);
             // Sau khi xóa xong, reset currentPost
-            this.currentPost = null; 
+            this.currentPost = null;    
+            // Xóa khỏi danh sách chung
+            this.posts = this.posts.filter(p => p.id !== postId);
+            // Xóa khỏi danh sách của tôi
+            this.myPosts = this.myPosts.filter(p => p.id !== postId);
+        },
+
+        async fetchMyPosts(params = {}) {
+            this.isLoading = true;
+            try {
+                const res = await forumService.getMyPosts(params);
+                this.myPosts = res.data.data;
+                this.pagination = {
+                    current_page: res.data.current_page,
+                    last_page: res.data.last_page
+                };
+            } finally {
+                this.isLoading = false;
+            }
         },
     }
 });
