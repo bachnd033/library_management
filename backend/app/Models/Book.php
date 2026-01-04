@@ -17,6 +17,7 @@ class Book extends Model
         'description',
         'total_copies',
         'available_copies',
+        'image',
     ];
 
     // public function ratings()
