@@ -11,11 +11,19 @@ export const BookService = {
     },
 
     createBook(data) {
-        return api.post('/api/books', data);
+        return api.post('/api/books', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data' 
+            }
+        });
     },
 
     updateBook(id, data) {
-        return api.put(`/api/books/${id}`, data);
+        return api.post(`/api/books/${id}`, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data' 
+            }
+        });
     },
 
     deleteBook(id) {

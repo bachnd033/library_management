@@ -15,8 +15,15 @@
 
     <div v-else class="row g-5">
       <div class="col-md-4">
-        <div class="card shadow border-0">
-           <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 400px; font-size: 5rem;">
+        <div class="card shadow border-0 overflow-hidden">
+           <img 
+               v-if="book.image_url" 
+               :src="book.image_url" 
+               :alt="book.title"
+               class="img-fluid w-100"
+               style="object-fit: cover; max-height: 500px;" 
+           >
+           <div v-else class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 400px; font-size: 5rem;">
               <i class="fas fa-book opacity-50"></i>
            </div>
         </div>
@@ -96,7 +103,6 @@ const authStore = useAuthStore();
 const book = ref(null);
 const isLoading = ref(true);
 
-// Kiểm tra quyền Admin
 const isAdmin = computed(() => {
     return authStore.user && authStore.user.role === 'admin'; 
 });
@@ -107,14 +113,21 @@ const isInWishlist = computed(() => {
 
 onMounted(async () => {
     const bookId = parseInt(route.params.id);
-    if (bookStore.books.length === 0) {
-        await bookStore.fetchBooks();
+    
+    await bookStore.fetchBook(bookId);
+    
+    if (bookStore.currentBook && bookStore.currentBook.id === bookId) {
+        book.value = bookStore.currentBook;
+    } else {
+        if (bookStore.books.length === 0) {
+            await bookStore.fetchBooks();
+        }
+        book.value = bookStore.books.find(b => b.id === bookId);
     }
-    book.value = bookStore.books.find(b => b.id === bookId);
+    
     isLoading.value = false;
 });
 
-// Logic Mượn sách (User)
 const handleBorrow = async () => {
     if (!authStore.user) {
         if(confirm('Vui lòng đăng nhập để mượn sách. Đi đến trang đăng nhập?')) {
@@ -126,13 +139,13 @@ const handleBorrow = async () => {
         const result = await bookStore.borrowBook(book.value.id);
         alert(result.message);
         if(result.success) {
-             const updatedBook = bookStore.books.find(b => b.id === book.value.id);
-             if(updatedBook) book.value.available_copies = updatedBook.available_copies;
+            // Cập nhật lại số lượng sau khi mượn thành công
+            await bookStore.fetchBook(book.value.id);
+            book.value = bookStore.currentBook;
         }
     }
 };
 
-// Logic Wishlist (User)
 const toggleWishlist = async () => {
     if (!authStore.user) {
          alert('Bạn cần đăng nhập để sử dụng tính năng này.');
@@ -141,18 +154,16 @@ const toggleWishlist = async () => {
     await bookStore.toggleWishlist(book.value);
 };
 
-// Logic Sửa sách 
 const handleEdit = () => {
     router.push(`/books/edit/${book.value.id}`);
 };
 
-// Logic Xóa sách (cho Admin)
 const handleDelete = async () => {
     if(confirm(`CẢNH BÁO: Bạn có chắc chắn muốn xóa cuốn sách "${book.value.title}" không? Hành động này không thể hoàn tác.`)) {
         try {
             const result = await bookStore.deleteBook(book.value.id);
             alert('Đã xóa sách thành công.');
-            router.push('/books'); // Quay về danh sách
+            router.push('/books'); 
         } catch (error) {
             alert('Có lỗi xảy ra khi xóa sách: ' + error.message);
         }

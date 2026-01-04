@@ -38,7 +38,7 @@ class BookController extends Controller
 
         $books = $query->latest()->paginate(10);
 
-        return response()->json($books);
+        return BookResource::collection($books);
     }
 
     /**

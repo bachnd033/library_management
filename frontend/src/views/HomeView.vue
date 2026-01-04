@@ -24,7 +24,7 @@
     </header>
 
     <section class="py-5 bg-light">
-      <div class="container">
+       <div class="container">
         <div class="row text-center g-4">
           <div class="col-md-4">
             <div class="p-3 bg-white shadow-sm rounded">
@@ -67,13 +67,23 @@
         <div v-else class="row g-4">
           <div v-for="book in featuredBooks" :key="book.id" class="col-6 col-md-3">
             <div class="card h-100 shadow-sm border-0 book-card">
-              <div class="card-img-top bg-secondary text-white d-flex justify-content-center align-items-center position-relative overflow-hidden" style="height: 200px;">
-                <i class="fas fa-book fa-3x opacity-50"></i>
-                <div v-if="book.available_copies < 1" class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 small m-2 rounded">
+              
+              <div class="card-img-top position-relative overflow-hidden bg-light" style="height: 280px;">
+                <img 
+                    v-if="book.image_url" 
+                    :src="book.image_url" 
+                    :alt="book.title"
+                    class="w-100 h-100"
+                    style="object-fit: cover;"
+                >
+                <div v-else class="w-100 h-100 bg-secondary text-white d-flex justify-content-center align-items-center">
+                    <i class="fas fa-book fa-3x opacity-50"></i>
+                </div>
+
+                <div v-if="book.available_copies < 1" class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 small m-2 rounded shadow-sm">
                     Hết hàng
                 </div>
               </div>
-              
               <div class="card-body d-flex flex-column">
                 <h5 class="card-title text-truncate" :title="book.title">{{ book.title }}</h5>
                 <p class="card-text text-muted small mb-2"><i class="fas fa-user-edit me-1"></i> {{ book.author }}</p>
@@ -137,14 +147,11 @@ const handleSearch = () => {
   }
 };
 
-// Hàm chuyển hướng đến trang chi tiết
 const viewDetails = (bookId) => {
     router.push(`/books/${bookId}`);
 };
 
-// Hàm xử lý mượn sách
 const handleBorrow = async (book) => {
-    // Kiểm tra đăng nhập
     if (!authStore.user) {
         if(confirm('Bạn cần đăng nhập để mượn sách. Đi đến trang đăng nhập?')) {
             router.push('/login');
@@ -152,11 +159,9 @@ const handleBorrow = async (book) => {
         return;
     }
 
-    // Gọi store để mượn
     if (confirm(`Bạn muốn mượn cuốn sách "${book.title}"?`)) {
         const result = await bookStore.borrowBook(book.id);
         alert(result.message);
-        // Load lại danh sách để cập nhật số lượng tồn kho nếu thành công
         if(result.success) {
             await bookStore.fetchBooks(); 
         }
@@ -189,9 +194,5 @@ const handleBorrow = async (book) => {
 .book-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
-}
-
-.card-img-top {
-    background-color: #6c757d; 
 }
 </style>
