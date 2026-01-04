@@ -17,7 +17,10 @@
             <router-link to="/" class="nav-link" active-class="active">Trang chủ</router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/books" class="nav-link" active-class="active">Quản lý Sách</router-link>
+            <router-link to="/books" class="nav-link" active-class="active">Danh mục sách</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/forum" class="nav-link" active-class="active">Diễn đàn</router-link>
           </li>
         </ul>
 
@@ -51,6 +54,10 @@
 
                         <router-link to="/admin/users" class="dropdown-item">
                             <i class="me-2 text-success"></i> Quản lý User
+                        </router-link>
+
+                        <router-link to="/admin/forum/categories" class="dropdown-item">
+                            <i class="me-2 text-success"></i> Quản lý chuyên mục
                         </router-link>
                     </li>
 

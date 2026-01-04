@@ -13,6 +13,7 @@ import UserListView from '../views/admin/UserListView.vue'
 import ForumHome from '../views/forum/ForumHome.vue'
 import ForumCreate from '../views/forum/ForumCreate.vue'
 import ForumDetail from '../views/forum/ForumDetail.vue'
+import AdminCategories from '../views/forum/AdminCategories.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -110,7 +111,7 @@ const router = createRouter({
         path: '/forum',
         name: 'ForumHome',
         component: ForumHome,
-        meta: { requiresAuth: true } // Yêu cầu đăng nhập mới xem được
+        meta: { requiresAuth: true } 
     },
 
     {
@@ -125,6 +126,13 @@ const router = createRouter({
         name: 'ForumDetail',
         component: ForumDetail,
         meta: { requiresAuth: true }
+    },
+
+    {
+        path: '/admin/forum/categories',
+        name: 'AdminForumCategories',
+        component: AdminCategories,
+        meta: { requiresAuth: true, role: 'admin' }
     },
 
     // {

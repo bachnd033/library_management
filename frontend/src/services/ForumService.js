@@ -21,5 +21,21 @@ export default {
     
     createComment(postId, content) {
         return api.post(`${RESOURCE}/posts/${postId}/comments`, { content });
-    }
+    },
+
+    createCategory(data) {
+        return api.post(`${RESOURCE}/categories`, data);
+    },
+
+    deleteCategory(id) {
+        return api.delete(`${RESOURCE}/categories/${id}`);
+    },
+
+    deleteComment(commentId) {
+        return api.delete(`${RESOURCE}/comments/${commentId}`);
+    },
+    
+    deletePost(id) {
+        return api.delete(`${RESOURCE}/posts/${id}`);
+    },
 };

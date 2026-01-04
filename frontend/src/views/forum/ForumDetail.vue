@@ -6,7 +6,15 @@
                 <span class="badge bg-info text-dark">{{ post.category?.name }}</span>
                 <span v-if="post.is_pinned" class="badge bg-danger ms-2">Được ghim</span>
             </div>
-            <h1 class="h3 fw-bold">{{ post.title }}</h1>
+            <div class="d-flex justify-content-between align-items-start">
+                <h1 class="h3 fw-bold">{{ post.title }}</h1>
+                
+                <button v-if="authStore.user && (authStore.user.role === 'admin' || authStore.user.id === post.user_id)"
+                        @click="handleDeletePost"
+                        class="btn btn-danger btn-sm text-nowrap">
+                    <i class="fas fa-trash-alt me-1"></i> Xóa bài
+                </button>
+            </div>
             <div class="text-muted small mb-4">
                 Đăng bởi <strong>{{ post.user?.name }}</strong> vào lúc {{ formatDate(post.created_at) }}
                 <span class="ms-3"><i class="fas fa-eye"></i> {{ post.views }} lượt xem</span>
@@ -30,7 +38,19 @@
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
-                    <h6 class="fw-bold mb-1">{{ comment.user?.name }} <small class="text-muted fw-normal ms-2">{{ formatDate(comment.created_at) }}</small></h6>
+                    <div class="d-flex justify-content-between">
+                        <h6 class="fw-bold mb-1">
+                            {{ comment.user?.name }} 
+                            <small class="text-muted fw-normal ms-2">{{ formatDate(comment.created_at) }}</small>
+                        </h6>
+                        
+                        <button v-if="authStore.user?.role === 'admin' || authStore.user?.id === comment.user_id" 
+                                @click="deleteComment(comment.id)" 
+                                class="btn btn-sm text-danger p-0 border-0" 
+                                title="Xóa bình luận">
+                            <span>Xóa bình luận</span>
+                        </button>
+                    </div>
                     <p class="mb-0">{{ comment.content }}</p>
                 </div>
             </div>
@@ -50,9 +70,13 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useForumStore } from '@/stores/forumStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'vue-router';
 
 const route = useRoute();
 const forumStore = useForumStore();
+const authStore = useAuthStore();
+const router = useRouter();
 const newComment = ref('');
 
 const post = computed(() => forumStore.currentPost);
@@ -67,5 +91,22 @@ const submitComment = async () => {
     newComment.value = ''; // Xóa ô nhập sau khi gửi
 };
 
+const deleteComment = async (commentId) => {
+    if(confirm('Bạn muốn xóa bình luận này?')) {
+        await forumStore.removeComment(commentId);
+    }
+};
+
+const handleDeletePost = async () => {
+    if (confirm('CẢNH BÁO: Hành động này không thể hoàn tác.\nBạn có chắc chắn muốn xóa bài viết này không?')) {
+        try {
+            await forumStore.removePost(post.value.id);
+            alert('Đã xóa bài viết thành công!');
+            router.push('/forum'); 
+        } catch (error) {
+            alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa bài viết'));
+        }
+    }
+};
 const formatDate = (date) => new Date(date).toLocaleString('vi-VN');
 </script>

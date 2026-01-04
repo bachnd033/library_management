@@ -65,5 +65,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     // Xóa bài viết
     Route::delete('/forum/posts/{id}', [ForumController::class, 'deletePost']);
+
+    // Quản lý chuyên mục (Admin)
+    Route::post('/forum/categories', [ForumController::class, 'createCategory']);
+    Route::delete('/forum/categories/{id}', [ForumController::class, 'deleteCategory']);
+
+    // Xóa bình luận
+    Route::delete('/forum/comments/{id}', [ForumController::class, 'deleteComment']);
 });
 

@@ -102,4 +102,43 @@ class ForumController extends Controller
         $post->delete();
         return response()->json(['message' => 'Đã xóa bài viết']);
     }
+
+    // Admin (Quản lý chuyên mục & Bình luận) 
+
+    // Thêm chuyên mục mới
+    public function createCategory(Request $request) {
+        if ($request->user()->role !== 'admin') return response()->json(['message' => 'Forbidden'], 403);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:forum_categories,slug',
+            'description' => 'nullable|string'
+        ]);
+
+        $category = ForumCategory::create($validated);
+        return response()->json(['message' => 'Tạo chuyên mục thành công', 'category' => $category]);
+    }
+
+    // Xóa chuyên mục
+    public function deleteCategory(Request $request, $id) {
+        if ($request->user()->role !== 'admin') return response()->json(['message' => 'Forbidden'], 403);
+
+        $category = ForumCategory::findOrFail($id);
+        $category->delete();
+        
+        return response()->json(['message' => 'Đã xóa chuyên mục']);
+    }
+
+    // Xóa bình luận 
+    public function deleteComment(Request $request, $id) {
+        $comment = ForumComment::findOrFail($id);
+        
+        // Chỉ Admin hoặc chính chủ mới được xóa
+        if ($request->user()->role !== 'admin' && $request->user()->id !== $comment->user_id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $comment->delete();
+        return response()->json(['message' => 'Đã xóa bình luận']);
+    }
 }
