@@ -79,6 +79,22 @@
       </div>
 
       <div class="col-md-3">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-danger text-white fw-bold">
+                <i class="fas fa-fire me-2"></i>Nổi Bật Nhất
+            </div>
+            <ul class="list-group list-group-flush">
+                <li v-for="post in forumStore.featuredPosts" :key="post.id" class="list-group-item">
+                    <router-link :to="'/forum/' + post.id" class="text-decoration-none text-dark fw-bold d-block mb-1">
+                        {{ post.title }}
+                    </router-link>
+                    <small class="text-muted">
+                        <i class="fas fa-eye text-primary me-1"></i> {{ post.views }} lượt xem
+                    </small>
+                </li>
+            </ul>
+        </div>
+
         <div class="card shadow-sm">
             <div class="card-header bg-white fw-bold">Chuyên Mục</div>
             <ul class="list-group list-group-flush">
@@ -110,6 +126,7 @@ const currentCat = ref(null);
 onMounted(() => {
     forumStore.fetchCategories();
     forumStore.fetchPosts();
+    forumStore.fetchFeatured();
 });
 
 const handleSearch = () => forumStore.fetchPosts({ search: searchQuery.value, category_id: currentCat.value });

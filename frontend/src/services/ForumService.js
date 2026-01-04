@@ -46,4 +46,8 @@ export default {
     togglePin(id) {
         return api.put(`${RESOURCE}/posts/${id}/pin`);
     },
+
+    getFeatured() {
+        return api.get(`${RESOURCE}/featured`);
+    },
 };

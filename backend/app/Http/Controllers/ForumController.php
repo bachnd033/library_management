@@ -173,4 +173,13 @@ class ForumController extends Controller
             'is_pinned' => $post->is_pinned
         ]);
     }
+
+    // Lấy danh sách bài viết nổi bật 
+    public function getFeaturedPosts() {
+        $posts = ForumPost::orderBy('views', 'desc') // Sắp xếp view giảm dần
+                          ->take(5)                  // Lấy 5 bài viết
+                          ->get(['id', 'title', 'views', 'created_at']); 
+
+        return response()->json($posts);
+    }
 }

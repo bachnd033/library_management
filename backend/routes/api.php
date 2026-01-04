@@ -78,6 +78,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Ghim/Bỏ ghim bài viết (Admin)
     Route::put('/forum/posts/{id}/pin', [ForumController::class, 'togglePin']);
+
+    // Lấy bài viết nổi bật
+    Route::get('/forum/featured', [ForumController::class, 'getFeaturedPosts']);
 });
 
 

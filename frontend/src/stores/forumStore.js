@@ -5,6 +5,7 @@ export const useForumStore = defineStore('forum', {
     state: () => ({
         posts: [],
         myPosts: [],
+        featuredPosts: [],
         categories: [],
         currentPost: null, 
         isLoading: false,
@@ -107,6 +108,11 @@ export const useForumStore = defineStore('forum', {
             }
             
             return res.data.message;
-        } 
+        }, 
+
+        async fetchFeatured() {
+            const res = await forumService.getFeatured();
+            this.featuredPosts = res.data;
+        },
     }
 });
