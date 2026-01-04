@@ -85,6 +85,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Thống kê Dashboard Admin
     Route::get('/admin/dashboard', [DashboardController::class, 'getAdminStats']);
+
+    // Thống kê Dashboard User
+    Route::get('/user/dashboard', [DashboardController::class, 'getUserStats']);
 });
 
 

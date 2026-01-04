@@ -39,6 +39,9 @@
                         <router-link to="/profile" class="dropdown-item">
                             <i class="fas fa-user me-2"></i> Hồ sơ cá nhân
                         </router-link>
+                        <router-link to="/dashboard" class="dropdown-item">
+                            <i class="fas fa-chart-line me-2"></i> Thống kê
+                        </router-link>
                     </li>
 
                     <li v-if="authStore.user?.role === 'admin'">

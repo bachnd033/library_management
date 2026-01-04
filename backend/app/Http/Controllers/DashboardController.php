@@ -43,4 +43,35 @@ class DashboardController extends Controller
             'recent_posts' => $recentPosts
         ]);
     }
+
+    public function getUserStats(Request $request) {
+        $userId = $request->user()->id;
+
+
+        $libraryStats = [
+            'borrowing' => Loan::where('user_id', $userId)->where('status', 'borrowed')->count(), // Đang mượn
+            'returned'  => Loan::where('user_id', $userId)->where('status', 'returned')->count(), // Đã trả
+            'overdue'   => Loan::where('user_id', $userId)->where('status', 'overdue')->count(),  // Quá hạn (Cần cảnh báo)
+        ];
+
+        $forumStats = [
+            'my_posts'    => ForumPost::where('user_id', $userId)->count(),
+            'my_comments' => ForumComment::where('user_id', $userId)->count(),
+            // Tổng view của tất cả bài viết do user này đăng
+            'total_views_received' => ForumPost::where('user_id', $userId)->sum('views'),
+        ];
+
+        // Danh sách sách đang mượn 
+        $currentLoans = Loan::with('book:id,title,author')
+                            ->where('user_id', $userId)
+                            ->whereIn('status', ['borrowed', 'overdue'])
+                            ->orderBy('due_date', 'asc') // Sắp xếp ngày hết hạn gần nhất lên đầu
+                            ->get();
+
+        return response()->json([
+            'library' => $libraryStats,
+            'forum' => $forumStats,
+            'current_loans' => $currentLoans
+        ]);
+    }
 }

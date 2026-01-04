@@ -7,7 +7,12 @@ export const useDashboardStore = defineStore('dashboard', {
         forum: {},
         newestUsers: [],
         recentPosts: [],
-        isLoading: false
+        isLoading: false,
+        userStats: {
+            library: {},
+            forum: {},
+            current_loans: []
+        },
     }),
     actions: {
         async fetchStats() {
@@ -23,6 +28,18 @@ export const useDashboardStore = defineStore('dashboard', {
             } finally {
                 this.isLoading = false;
             }
-        }
+        },
+
+        async fetchUserStats() {
+            this.isLoading = true;
+            try {
+                const res = await dashboardService.getUserStats();
+                this.userStats = res.data;
+            } catch (error) {
+                console.error("Lỗi tải thống kê user:", error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
     }
 });
