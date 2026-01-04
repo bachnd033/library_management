@@ -103,7 +103,7 @@ class ForumController extends Controller
         return response()->json(['message' => 'Đã xóa bài viết']);
     }
 
-    // Admin (Quản lý chuyên mục & Bình luận) 
+    // Admin 
 
     // Thêm chuyên mục mới
     public function createCategory(Request $request) {
@@ -153,5 +153,24 @@ class ForumController extends Controller
                           ->paginate(10);
 
         return response()->json($posts);
+    }
+
+    // Ghim/Bỏ ghim bài viết (Admin)
+    public function togglePin(Request $request, $id) {
+        // Check quyền Admin
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $post = ForumPost::findOrFail($id);
+        
+        // Đảo ngược trạng thái 
+        $post->is_pinned = !$post->is_pinned;
+        $post->save();
+
+        return response()->json([
+            'message' => $post->is_pinned ? 'Đã ghim bài viết' : 'Đã bỏ ghim bài viết',
+            'is_pinned' => $post->is_pinned
+        ]);
     }
 }

@@ -72,9 +72,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Xóa bình luận
     Route::delete('/forum/comments/{id}', [ForumController::class, 'deleteComment']);
-    
+
     // Lấy danh sách bài viết của user hiện tại
     Route::get('/forum/my-posts', [ForumController::class, 'getMyPosts']);
+
+    // Ghim/Bỏ ghim bài viết (Admin)
+    Route::put('/forum/posts/{id}/pin', [ForumController::class, 'togglePin']);
 });
 
 

@@ -6,14 +6,28 @@
                 <span class="badge bg-info text-dark">{{ post.category?.name }}</span>
                 <span v-if="post.is_pinned" class="badge bg-danger ms-2">Được ghim</span>
             </div>
-            <div class="d-flex justify-content-between align-items-start">
-                <h1 class="h3 fw-bold">{{ post.title }}</h1>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h1 class="h3 fw-bold mb-0">
+                    {{ post.title }}
+                    <span v-if="post.is_pinned" class="badge bg-danger fs-6 ms-2 align-middle">
+                        <i class="fas fa-thumbtack"></i> Đã Ghim
+                    </span>
+                </h1>
                 
-                <button v-if="authStore.user && (authStore.user.role === 'admin' || authStore.user.id === post.user_id)"
-                        @click="handleDeletePost"
-                        class="btn btn-danger btn-sm text-nowrap">
-                    <i class="fas fa-trash-alt me-1"></i> Xóa bài
-                </button>
+                <div class="btn-group">
+                    <button v-if="authStore.user?.role === 'admin'"
+                            @click="handlePin"
+                            class="btn btn-outline-warning btn-sm text-dark fw-bold"
+                            :title="post.is_pinned ? 'Bỏ ghim bài này' : 'Ghim bài này lên đầu'">
+                        <i class="fas fa-thumbtack"></i> {{ post.is_pinned ? 'Bỏ ghim' : 'Ghim bài' }}
+                    </button>
+
+                    <button v-if="authStore.user && (authStore.user.role === 'admin' || authStore.user.id === post.user_id)"
+                            @click="handleDeletePost"
+                            class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-trash-alt"></i> Xóa
+                    </button>
+                </div>
             </div>
             <div class="text-muted small mb-4">
                 Đăng bởi <strong>{{ post.user?.name }}</strong> vào lúc {{ formatDate(post.created_at) }}
@@ -106,6 +120,14 @@ const handleDeletePost = async () => {
         } catch (error) {
             alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa bài viết'));
         }
+    }
+};
+const handlePin = async () => {
+    try {
+        const message = await forumStore.pinPost(post.value.id);
+        alert(message);
+    } catch (error) {
+        alert('Lỗi: ' + (error.response?.data?.message || 'Không thể ghim bài'));
     }
 };
 const formatDate = (date) => new Date(date).toLocaleString('vi-VN');

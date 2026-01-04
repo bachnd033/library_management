@@ -91,5 +91,22 @@ export const useForumStore = defineStore('forum', {
                 this.isLoading = false;
             }
         },
+
+        async pinPost(postId) {
+            const res = await forumService.togglePin(postId);
+            
+            // Cập nhật state currentPost (nếu đang xem chi tiết)
+            if (this.currentPost && this.currentPost.id === postId) {
+                this.currentPost.is_pinned = res.data.is_pinned;
+            }
+
+            // Cập nhật state posts (nếu đang ở danh sách)
+            const postInList = this.posts.find(p => p.id === postId);
+            if (postInList) {
+                postInList.is_pinned = res.data.is_pinned;
+            }
+            
+            return res.data.message;
+        } 
     }
 });

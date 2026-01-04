@@ -2,7 +2,7 @@
   <div class="container mt-4">
     <div class="row">
       <div class="col-md-9">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="text-primary"><i class="fas fa-comments me-2"></i>Diễn Đàn Thảo Luận</h2>
             <div>
                 <router-link to="/forum/my-posts" class="btn btn-outline-primary me-2">
@@ -27,16 +27,37 @@
         <div v-else>
             <div v-for="post in forumStore.posts" :key="post.id" class="card mb-3 shadow-sm border-start-primary">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <h5 class="card-title mb-1">
-                            <span v-if="post.is_pinned" class="badge bg-danger me-2"><i class="fas fa-thumbtack"></i> Ghim</span>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title mb-1 flex-grow-1">
+                            <span v-if="post.is_pinned" class="badge bg-danger me-2">
+                                <i class="fas fa-thumbtack"></i>
+                            </span>
                             <router-link :to="'/forum/' + post.id" class="text-decoration-none text-dark fw-bold">
                                 {{ post.title }}
                             </router-link>
                         </h5>
-                        <small class="text-muted"><i class="fas fa-eye me-1"></i> {{ post.views }}</small>
+
+                        <div class="ms-2 d-flex gap-2 align-items-center">
+                            <small class="text-muted"><i class="fas fa-eye"></i> {{ post.views }}</small>
+
+                            <button v-if="authStore.user?.role === 'admin'"
+                                    @click="handlePin(post)"
+                                    class="btn btn-sm btn-link p-0 text-warning ms-2"
+                                    :title="post.is_pinned ? 'Bỏ ghim' : 'Ghim bài'">
+                                <i class="fas fa-thumbtack" :class="{'text-secondary': !post.is_pinned}"></i>
+                            </button>
+
+                            <button v-if="authStore.user && (authStore.user.role === 'admin' || authStore.user.id === post.user_id)"
+                                    @click="handleDelete(post)"
+                                    class="btn btn-sm btn-link p-0 text-danger ms-2"
+                                    title="Xóa bài viết">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
                     </div>
-                    <p class="card-text text-muted text-truncate">{{ post.content }}</p>
+                    
+                    <p class="card-text text-muted text-truncate mt-2">{{ post.content }}</p>
+                    
                     <div class="d-flex justify-content-between align-items-center mt-2">
                         <small class="text-secondary">
                             <i class="fas fa-user-circle me-1"></i> {{ post.user?.name }} 
@@ -79,8 +100,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useForumStore } from '@/stores/forumStore';
+import { useAuthStore } from '@/stores/authStore'; 
 
 const forumStore = useForumStore();
+const authStore = useAuthStore(); 
 const searchQuery = ref('');
 const currentCat = ref(null);
 
@@ -90,15 +113,36 @@ onMounted(() => {
 });
 
 const handleSearch = () => forumStore.fetchPosts({ search: searchQuery.value, category_id: currentCat.value });
+
 const filterCategory = (id) => {
     currentCat.value = id;
     forumStore.fetchPosts({ category_id: id });
 };
+
 const changePage = (page) => forumStore.fetchPosts({ page, category_id: currentCat.value, search: searchQuery.value });
+
+const handlePin = async (post) => {
+    try {
+        await forumStore.pinPost(post.id);
+    } catch (error) {
+        alert('Lỗi: ' + (error.response?.data?.message || 'Không thể ghim bài'));
+    }
+};
+
+const handleDelete = async (post) => {
+    if(confirm(`Bạn có chắc chắn muốn xóa bài: "${post.title}"?`)) {
+        try {
+            await forumStore.removePost(post.id);
+        } catch (error) {
+            alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa bài'));
+        }
+    }
+};
 
 const formatDate = (date) => new Date(date).toLocaleDateString('vi-VN');
 </script>
 
 <style scoped>
 .border-start-primary { border-left: 4px solid #0d6efd; }
+.btn-link { text-decoration: none; }
 </style>

@@ -38,8 +38,12 @@ export default {
     deletePost(id) {
         return api.delete(`${RESOURCE}/posts/${id}`);
     },
-    
+
     getMyPosts(params) {
         return api.get(`${RESOURCE}/my-posts`, { params });
+    },
+
+    togglePin(id) {
+        return api.put(`${RESOURCE}/posts/${id}/pin`);
     },
 };
