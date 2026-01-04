@@ -18,17 +18,21 @@ const app = createApp(App)
 
 app.use(createPinia())
 
+let isAuthChecked = false;
+
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
   // Khôi phục trạng thái đăng nhập khi F5 trang
   // Nếu Store chưa có User, gọi API lấy User
-  if (!authStore.user) {
-      try {
-          await authStore.fetchUser();
-      } catch (e) {
-          console.error("Lỗi khi khôi phục trạng thái đăng nhập:", e);
+  if (!isAuthChecked) {
+      if (!authStore.user) {
+          try {
+              await authStore.fetchUser();
+          } catch (e) {
+          }
       }
+      isAuthChecked = true; 
   }
 
   // Kiểm tra quyền truy cập dựa trên kết quả bước 1
