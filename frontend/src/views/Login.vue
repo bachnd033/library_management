@@ -54,8 +54,8 @@ const handleLogin = async () => {
       password: password.value,
     });
     
-    // Đăng nhập thành công, chuyển hướng đến trang Quản lý Sách
-    router.push('/books');
+    // Đăng nhập thành công, chuyển hướng đến trang chủ
+    router.push('/');
 
   } catch (err) {
     isLoading.value = false;

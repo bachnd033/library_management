@@ -64,9 +64,11 @@
 
             <tr v-for="book in bookStore.books" :key="book.id">
               <td>#{{ book.id }}</td>
-              <td>
-                 <span class="fw-bold text-dark">{{ book.title }}</span>
+              
+              <td style="cursor: pointer;" @click="handleViewDetail(book.id)">
+                  <span class="fw-bold text-primary text-decoration-underline-hover">{{ book.title }}</span>
               </td>
+              
               <td class="text-muted">{{ book.author }}</td>
               <td><span class="badge bg-light text-dark border">{{ book.category }}</span></td>
               
@@ -80,6 +82,10 @@
 
               <td class="text-center">
                 <div v-if="authStore.user?.role === 'admin'">
+                  <button @click="handleViewDetail(book.id)" class="btn btn-outline-info btn-sm me-2" title="Xem chi tiết">
+                    <i class="fas fa-eye"></i>
+                  </button>
+
                   <button @click="router.push(`/books/edit/${book.id}`)" class="btn btn-outline-warning btn-sm me-2" title="Chỉnh sửa">
                     <i class="fas fa-edit"></i>
                   </button>
@@ -89,6 +95,15 @@
                 </div>
 
                 <div v-else class="d-flex justify-content-center align-items-center">
+                  
+                  <button 
+                    @click="handleViewDetail(book.id)"
+                    class="btn btn-sm me-2 btn-icon-only text-info"
+                    title="Xem chi tiết"
+                  >
+                    <i class="fas fa-eye fa-lg"></i>
+                  </button>
+
                   <button 
                     @click="handleToggleWishlist(book)"
                     class="btn btn-sm me-2 btn-icon-only"
@@ -115,7 +130,6 @@
 
         <nav v-if="bookStore.pagination.last_page > 1" aria-label="Page navigation" class="d-flex justify-content-center mt-4">
           <ul class="pagination shadow-sm">
-            
             <li class="page-item" :class="{ disabled: bookStore.pagination.current_page === 1 }">
               <button class="page-link" @click="changePage(bookStore.pagination.current_page - 1)" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
@@ -162,18 +176,12 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
-// Biến lưu từ khóa tìm kiếm
 const searchQuery = ref('');
 
 onMounted(async () => {
-  // Kiểm tra xem trên URL có tham số 'search' không
   const urlKeyword = route.query.search; 
-  
-  if (urlKeyword) {  
-      // Gán từ khóa vào ô input
+  if (urlKeyword) {   
       searchQuery.value = urlKeyword; 
-      
-      // Gọi API tìm kiếm
       await bookStore.fetchBooks({ 
           search: urlKeyword, 
           page: 1 
@@ -182,17 +190,20 @@ onMounted(async () => {
       await bookStore.fetchBooks();
   }
   
-  // Tải wishlist
   if (authStore.user && authStore.user.role !== 'admin') {
     await bookStore.fetchWishlist();
   }
 });
 
-// Xử lý tìm kiếm
+// Hàm chuyển hướng sang trang chi tiết
+const handleViewDetail = (bookId) => {
+    router.push(`/books/${bookId}`);
+};
+
 const handleSearch = async () => {
     await bookStore.fetchBooks({ 
-        search: searchQuery.value, // Gửi từ khóa lên store
-        page: 1 // Reset về trang 1 khi tìm kiếm
+        search: searchQuery.value, 
+        page: 1 
     });
 };
 
@@ -200,7 +211,6 @@ const handleDelete = async (bookId, bookTitle) => {
   if (confirm(`Bạn có chắc chắn muốn xóa sách "${bookTitle}" không?`)) {
     const success = await bookStore.deleteBook(bookId);
     if (success) {
-      // Xóa xong thì load lại danh sách, giữ nguyên từ khóa tìm kiếm
       await bookStore.fetchBooks({ search: searchQuery.value });
       alert('Xóa sách thành công!');
     }
@@ -214,7 +224,6 @@ const handleBorrow = async (bookId) => {
     
     if (result.success) {
         alert(result.message);
-        // Load lại danh sách để cập nhật số tồn kho (giữ nguyên từ khóa tìm kiếm)
         await bookStore.fetchBooks({ search: searchQuery.value });
     } else {
         alert('Lỗi: ' + result.message);
@@ -225,18 +234,14 @@ const handleToggleWishlist = async (book) => {
     await bookStore.toggleWishlist(book);
 };
 
-//Logic phân trang
 const changePage = async (page) => {
-    // Kiểm tra trang hợp lệ
     if (page < 1 || page > bookStore.pagination.last_page || page === bookStore.pagination.current_page) {
         return;
     }
-
     await bookStore.fetchBooks({
         page: page,
         search: searchQuery.value 
     });
-    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 </script>
@@ -273,5 +278,9 @@ const changePage = async (page) => {
   button:disabled {
     cursor: not-allowed;
     opacity: 0.7;
+  }
+
+  .text-decoration-underline-hover:hover {
+      text-decoration: underline !important;
   }
 </style>

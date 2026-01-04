@@ -79,12 +79,20 @@
                 <p class="card-text text-muted small mb-2"><i class="fas fa-user-edit me-1"></i> {{ book.author }}</p>
                 <div class="mt-auto d-flex justify-content-between align-items-center">
                   <span class="badge bg-light text-dark border">{{ book.category }}</span>
+                  <small class="text-muted" v-if="book.available_copies > 0">Còn {{ book.available_copies }} cuốn</small>
                 </div>
               </div>
               
-              <div class="card-footer bg-transparent border-top-0 pt-0">
-                 <button @click="router.push('/books')" class="btn btn-primary btn-sm w-100">
-                    Xem chi tiết
+              <div class="card-footer bg-transparent border-top-0 pt-0 d-flex gap-2">
+                 <button @click="viewDetails(book.id)" class="btn btn-outline-primary btn-sm flex-grow-1">
+                    Chi tiết
+                 </button>
+                 <button 
+                    @click="handleBorrow(book)" 
+                    class="btn btn-primary btn-sm flex-grow-1"
+                    :disabled="book.available_copies < 1"
+                 >
+                    Mượn
                  </button>
               </div>
             </div>
@@ -102,11 +110,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useBookStore } from '@/stores/bookStore'; 
+import { useBookStore } from '@/stores/bookStore';
+import { useAuthStore } from '@/stores/authStore'; 
 import Footer from '@/components/Footer.vue';
 
 const router = useRouter();
 const bookStore = useBookStore(); 
+const authStore = useAuthStore();
 const searchQuery = ref('');
 
 onMounted(async () => {
@@ -114,9 +124,7 @@ onMounted(async () => {
 });
 
 const featuredBooks = computed(() => {
-    // Nếu chưa có sách thì trả về mảng rỗng
     if (!bookStore.books) return [];
-    // Cắt lấy 4 phần tử đầu tiên
     return bookStore.books.slice(0, 4);
 });
 
@@ -127,6 +135,32 @@ const handleSearch = () => {
         query: { search: searchQuery.value } 
     });
   }
+};
+
+// Hàm chuyển hướng đến trang chi tiết
+const viewDetails = (bookId) => {
+    router.push(`/books/${bookId}`);
+};
+
+// Hàm xử lý mượn sách
+const handleBorrow = async (book) => {
+    // Kiểm tra đăng nhập
+    if (!authStore.user) {
+        if(confirm('Bạn cần đăng nhập để mượn sách. Đi đến trang đăng nhập?')) {
+            router.push('/login');
+        }
+        return;
+    }
+
+    // Gọi store để mượn
+    if (confirm(`Bạn muốn mượn cuốn sách "${book.title}"?`)) {
+        const result = await bookStore.borrowBook(book.id);
+        alert(result.message);
+        // Load lại danh sách để cập nhật số lượng tồn kho nếu thành công
+        if(result.success) {
+            await bookStore.fetchBooks(); 
+        }
+    }
 };
 </script>
 

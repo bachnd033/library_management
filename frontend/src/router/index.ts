@@ -7,7 +7,8 @@ import HomeView from '@/views/HomeView.vue';
 import RegisterView from '@/views/RegisterView.vue';
 import MyBooks from '@/views/MyBooks.vue';
 import UserProfile from '@/views/UserProfile.vue';
-import AdminLoans from '../views/AdminLoans.vue'
+import AdminLoans from '../views/AdminLoans.vue';
+import BookDetailView from '@/views/BookDetailView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,6 +69,12 @@ const router = createRouter({
     },
 
     {
+      path: '/books/:id',
+      name: 'book-detail',
+      component: BookDetailView
+    },
+
+    {
       path: '/my-books',
       name: 'MyBooks',
       component: MyBooks,
@@ -87,6 +94,7 @@ const router = createRouter({
       component: AdminLoans,
       meta: { requiresAuth: true, role: 'admin' } 
     },
+
     // {
     //   path: '/about',
     //   name: 'about',

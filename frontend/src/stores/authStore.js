@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-// Đảm bảo đường dẫn import đúng file axios.js bạn vừa tạo
 import api from '@/api/axios'; 
 import router from '@/router'; 
 
@@ -89,7 +88,6 @@ export const useAuthStore = defineStore('authStore', {
     },
 
     // Cập nhật hồ sơ
-
     async updateProfile(formData) {
         this.isLoading = true;
         try {

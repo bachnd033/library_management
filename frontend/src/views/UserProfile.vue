@@ -111,19 +111,38 @@
             <div v-if="bookStore.wishlist.length === 0" class="text-center text-muted py-4">
                 Chưa có sách yêu thích.
             </div>
-            <div class="row g-3">
-                <div v-for="book in bookStore.wishlist" :key="book.id" class="col-md-6">
-                    <div class="border rounded p-3 d-flex justify-content-between align-items-center shadow-sm h-100">
-                        <div>
-                            <h6 class="mb-1 fw-bold text-dark">{{ book.title }}</h6>
-                            <small class="text-muted"><i class="fas fa-user-edit me-1"></i>{{ book.author }}</small>
+            
+            <div class="d-flex flex-column gap-3">
+                <div v-for="book in bookStore.wishlist" :key="book.id" class="border rounded p-3 shadow-sm bg-white">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold text-dark fs-5">{{ book.title }}</h6>
+                            <small class="text-muted d-block"><i class="fas fa-user-edit me-1"></i>{{ book.author }}</small>
+                            <span class="badge bg-light text-secondary border mt-2">{{ book.category }}</span>
                         </div>
-                        <button @click="removeFromWishlist(book)" class="btn btn-sm btn-outline-danger" title="Xóa">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        
+                        <div class="d-flex gap-2">
+                            <button @click="viewDetails(book.id)" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> Chi tiết
+                            </button>
+                            
+                            <button 
+                                @click="handleBorrow(book)" 
+                                class="btn btn-sm btn-success text-white"
+                                :disabled="book.available_copies < 1"
+                            >
+                                <i class="fas fa-book-reader me-1"></i> 
+                                {{ book.available_copies < 1 ? 'Hết hàng' : 'Mượn' }}
+                            </button>
+
+                            <button @click="removeFromWishlist(book)" class="btn btn-sm btn-outline-danger" title="Xóa khỏi yêu thích">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
           </div>
 
         </div>
@@ -150,24 +169,20 @@ const form = ref({
   password_confirmation: ''
 });
 
-// Chữ cái đầu tên người dùng
 const userInitial = computed(() => {
     return authStore.user?.name ? authStore.user.name.charAt(0).toUpperCase() : 'U';
 });
 
 onMounted(async () => {
-    // Gọi API lấy dữ liệu khi vào trang
     await bookStore.fetchBorrowedBooks();
     await bookStore.fetchWishlist();
 });
 
-// Hàm format ngày tháng 
 const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('vi-VN');
 };
 
-// Hàm kiểm tra quá hạn -> bôi đỏ ngày trả
 const isOverdue = (dateString) => {
     if (!dateString) return false;
     return new Date(dateString) < new Date();
@@ -186,12 +201,32 @@ const handleReturn = async (bookId) => {
     if(confirm('Bạn có chắc muốn trả cuốn sách này không?')) {
         const result = await bookStore.returnBook(bookId);
         if(result.message) alert(result.message);
+        if(result.success) await bookStore.fetchBorrowedBooks(); // Refresh list
     }
 };
 
 const removeFromWishlist = async (book) => {
     if(confirm(`Bỏ sách "${book.title}" khỏi yêu thích?`)) {
         await bookStore.toggleWishlist(book);
+    }
+};
+
+// Xem chi tiết
+const viewDetails = (bookId) => {
+    router.push(`/books/${bookId}`);
+};
+
+// Mượn sách từ Wishlist
+const handleBorrow = async (book) => {
+    if(confirm(`Bạn muốn đăng ký mượn cuốn "${book.title}"?`)) {
+        const result = await bookStore.borrowBook(book.id);
+        alert(result.message);
+        // Sau khi mượn, có thể cần load lại sách đang mượn
+        if(result.success) {
+             await bookStore.fetchBorrowedBooks();
+             // Chuyển sang tab mượn sách để người dùng thấy kết quả
+             activeTab.value = 'loans';
+        }
     }
 };
 

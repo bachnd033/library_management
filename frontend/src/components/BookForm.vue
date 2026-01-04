@@ -18,13 +18,30 @@
     </div>
 
     <div class="row">
-      <div class="col-md-6 mb-3">
+      <div class="col-md-4 mb-3">
         <label for="publication_year" class="form-label">Năm xuất bản</label>
         <input type="number" v-model.number="formData.publication_year" class="form-control" id="publication_year">
       </div>
-      <div class="col-md-6 mb-3">
+      
+      <div class="col-md-4 mb-3">
         <label for="total_copies" class="form-label">Tổng số bản (*)</label>
         <input type="number" v-model.number="formData.total_copies" class="form-control" id="total_copies" required min="1">
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label for="available_copies" class="form-label">Số lượng hiện có (*)</label>
+        <input 
+            type="number" 
+            v-model.number="formData.available_copies" 
+            class="form-control" 
+            id="available_copies" 
+            required 
+            min="0"
+            :max="formData.total_copies"
+        >
+        <div class="form-text text-muted" v-if="formData.available_copies > formData.total_copies">
+            <small class="text-danger">Lưu ý: Số hiện có đang lớn hơn tổng số bản.</small>
+        </div>
       </div>
     </div>
 
@@ -44,42 +61,46 @@
 </template>
 
 <script setup>
-    import { ref, watchEffect } from 'vue';
-    import { useRouter } from 'vue-router';
+import { ref, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 
-    const props = defineProps({
-    book: Object, // Prop nhận sách (cho chế độ Edit)
-    isLoading: Boolean,
-    error: String,
-    submitText: { // Text của nút submit (Thêm mới/Cập nhật)
-        type: String,
-        default: 'Lưu'
+const props = defineProps({
+  book: Object, 
+  isLoading: Boolean,
+  error: String,
+  submitText: { 
+    type: String,
+    default: 'Lưu'
+  }
+});
+
+const emit = defineEmits(['submit']);
+const router = useRouter();
+
+const formData = ref({
+  title: '',
+  author: '',
+  category: '',
+  publication_year: new Date().getFullYear(),
+  total_copies: 1,
+  available_copies: 1, // Khởi tạo mặc định
+  description: '',
+});
+
+watchEffect(() => {
+  if (props.book) {
+    formData.value = { ...props.book };
+  } else {
+    //
+  }
+});
+
+const handleSubmit = () => {
+    if (formData.value.available_copies > formData.value.total_copies) {
+        if(!confirm('Số lượng hiện có đang LỚN HƠN tổng số bản. Bạn có chắc chắn muốn lưu không?')) {
+            return;
+        }
     }
-    });
-
-    const emit = defineEmits(['submit']);
-    const router = useRouter();
-
-    // State cục bộ cho form
-    const formData = ref({
-    title: '',
-    author: '',
-    category: '',
-    publication_year: new Date().getFullYear(),
-    total_copies: 1,
-    description: '',
-    });
-
-    // Theo dõi prop 'book'
-    // Nếu 'book' thay đổi (chế độ Edit), cập nhật formData
-    watchEffect(() => {
-    if (props.book) {
-        formData.value = { ...props.book };
-    }
-    });
-
-    const handleSubmit = () => {
-    // Gửi sự kiện 'submit' lên component cha (Create/Edit)
     emit('submit', formData.value);
-    };
+};
 </script>

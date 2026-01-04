@@ -38,7 +38,7 @@ export const useBookStore = defineStore('bookStore', {
                 
                 this.books = response.data.data;
                 
-                // Lưu lại pagination 
+                // Lưu lại pagination   
                 this.pagination = {
                     current_page: response.data.current_page,
                     last_page: response.data.last_page,
