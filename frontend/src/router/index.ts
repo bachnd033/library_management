@@ -1,15 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import BookList from '../views/BookList.vue';
-import BookCreate from '../views/BookCreate.vue';
-import BookEdit from '../views/BookEdit.vue';
-import LoginView from '../views/Login.vue';
-import HomeView from '@/views/HomeView.vue';
-import RegisterView from '@/views/RegisterView.vue';
-import MyBooks from '@/views/MyBooks.vue';
-import UserProfile from '@/views/UserProfile.vue';
-import AdminLoans from '../views/AdminLoans.vue';
-import BookDetailView from '@/views/BookDetailView.vue';
-import UserListView from '@/views/UserListView.vue';
+import BookList from '../views/library/BookList.vue';
+import BookCreate from '../views/library/BookCreate.vue';
+import BookEdit from '../views/library/BookEdit.vue';
+import HomeView from '../views/HomeView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import LoginView from '../views/LoginView.vue'
+import BookDetailView from '../views/BookDetailView.vue'
+import MyBooks from '../views/library/MyBooks.vue'
+import UserProfile from '../views/UserProfile.vue'
+import AdminLoans from '../views/admin/AdminLoans.vue'
+import UserListView from '../views/admin/UserListView.vue'
+import ForumHome from '../views/forum/ForumHome.vue'
+import ForumCreate from '../views/forum/ForumCreate.vue'
+import ForumDetail from '../views/forum/ForumDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -101,7 +104,28 @@ const router = createRouter({
       name: 'admin-users',
       component: UserListView,
       meta: { requiresAuth: true, role: 'admin' }
-    }
+    },
+
+    {
+        path: '/forum',
+        name: 'ForumHome',
+        component: ForumHome,
+        meta: { requiresAuth: true } // Yêu cầu đăng nhập mới xem được
+    },
+
+    {
+        path: '/forum/create',
+        name: 'ForumCreate',
+        component: ForumCreate,
+        meta: { requiresAuth: true }
+    },
+
+    {
+        path: '/forum/:id',
+        name: 'ForumDetail',
+        component: ForumDetail,
+        meta: { requiresAuth: true }
+    },
 
     // {
     //   path: '/about',
