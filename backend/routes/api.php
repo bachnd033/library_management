@@ -15,6 +15,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Lấy thông tin user hiện tại
     Route::get('/user', [AuthController::class, 'user']);
     
+    // Quản lý người dùng (Admin)
+    Route::get('/users', [UserController::class, 'index']);
+
+    // Cập nhật vai trò người dùng (Admin)
+    Route::put('/users/{id}/role', [UserController::class, 'updateRole']);
+
+    // Xóa người dùng (Admin)
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -35,7 +44,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/return', [LoanController::class, 'returnBook']);
     Route::get('/my-loans', [LoanController::class, 'myLoans']);
 
-    // Admin route
+    // Quản lý mượn trả sách (Admin)
     Route::get('/admin/loans', [LoanController::class, 'index']); 
     Route::post('/admin/loans/{id}/approve', [LoanController::class, 'approve']);
     Route::post('/admin/loans/{id}/reject', [LoanController::class, 'reject']);

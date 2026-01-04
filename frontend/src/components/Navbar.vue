@@ -48,6 +48,10 @@
                         <router-link to="/books/create" class="dropdown-item">
                             <i class="me-2 text-success"></i> Nhập sách mới
                         </router-link>
+
+                        <router-link to="/admin/users" class="dropdown-item">
+                            <i class="me-2 text-success"></i> Quản lý User
+                        </router-link>
                     </li>
 
                     <li><hr class="dropdown-divider"></li>

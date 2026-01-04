@@ -9,6 +9,7 @@ import MyBooks from '@/views/MyBooks.vue';
 import UserProfile from '@/views/UserProfile.vue';
 import AdminLoans from '../views/AdminLoans.vue';
 import BookDetailView from '@/views/BookDetailView.vue';
+import UserListView from '@/views/UserListView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -94,6 +95,13 @@ const router = createRouter({
       component: AdminLoans,
       meta: { requiresAuth: true, role: 'admin' } 
     },
+
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: UserListView,
+      meta: { requiresAuth: true, role: 'admin' }
+    }
 
     // {
     //   path: '/about',

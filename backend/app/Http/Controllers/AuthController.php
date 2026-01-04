@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     /**
-     * Xử lý Đăng nhập (Login)
+     * Xử lý Đăng nhập 
      */
     public function login(Request $request)
     {
@@ -24,8 +24,9 @@ class AuthController extends Controller
         // Kiểm tra thông tin đăng nhập
         if (!Auth::attempt($validated)) {
             return response()->json([
-                'message' => 'Thông tin đăng nhập không chính xác (Email hoặc Mật khẩu sai).'
-            ], 401); // Trả về lỗi 401 Unauthorized
+                'message' => 'Đăng nhập thành công',
+                'user' => Auth::user()
+            ], 200);
         }
 
         // Lấy thông tin user sau khi đăng nhập thành công
@@ -43,50 +44,47 @@ class AuthController extends Controller
     }
 
     /**
-     * Xử lý đăng xuất
+     * Xử lý Đăng ký 
+     */
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed', 
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'user', // Mặc định là user thường
+        ]);
+
+        // Tự động login ngay sau khi đăng ký
+        Auth::login($user);
+
+        return response()->json([
+            'message' => 'Đăng ký thành công',
+            'user' => $user
+        ], 201);
+    }
+
+    /**
+     * Xử lý Đăng xuất 
      */
     public function logout(Request $request)
     {
-        // Đăng xuất khỏi Guard web
         Auth::guard('web')->logout();
 
-        // Hủy Session hiện tại
         $request->session()->invalidate();
-
-        // Tạo lại CSRF Token mới
         $request->session()->regenerateToken();
 
-        // Trả về thành công (204 No Content hoặc 200 OK)
         return response()->json(['message' => 'Đăng xuất thành công']);
     }
 
-    public function register(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:6|confirmed', 
-    ]);
-
-    $user = User::create([
-        'name' => $validated['name'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-        'role' => 'user',
-    ]);
-
-    // Tự động đăng nhập luôn sau khi đăng ký
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'message' => 'Đăng ký thành công',
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-        'user' => $user
-    ], 201);
-}
     /**
-     * Lấy thông tin User hiện tại (Me)
+     * Lấy thông tin User hiện tại
      */
     public function user(Request $request)
     {

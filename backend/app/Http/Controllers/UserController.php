@@ -68,4 +68,64 @@ class UserController extends Controller
             return response()->json(['message' => 'Đã bỏ yêu thích', 'status' => 'removed']);
         }
     }
+    // --- PHẦN ADMIN ---
+
+    public function index(Request $request) 
+    {
+        // Check quyền Admin
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $query = User::query();
+
+        // Tìm kiếm
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Sắp xếp & Phân trang
+        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+        
+        return response()->json($users);
+    }
+
+    public function updateRole(Request $request, $id) 
+    {
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $request->validate(['role' => 'required|in:admin,user']);
+        $user = User::findOrFail($id);
+
+        if ($user->id === $request->user()->id) {
+            return response()->json(['message' => 'Không thể đổi quyền chính mình'], 403);
+        }
+
+        $user->role = $request->role;
+        $user->save();
+
+        return response()->json(['message' => 'Cập nhật thành công']);
+    }
+
+    public function destroy(Request $request, $id) 
+    {
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $user = User::findOrFail($id);
+
+        if ($user->id === $request->user()->id) {
+            return response()->json(['message' => 'Không thể xóa chính mình'], 403);
+        }
+
+        $user->delete();
+        return response()->json(['message' => 'Đã xóa user']);
+    }
 }

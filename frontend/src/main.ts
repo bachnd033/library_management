@@ -4,11 +4,15 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import axios from 'axios';
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 // Import store 
 import { useAuthStore } from './stores/authStore'
+
+axios.defaults.baseURL = 'http://localhost:8000'; 
+axios.defaults.withCredentials = true; 
 
 const app = createApp(App)
 
