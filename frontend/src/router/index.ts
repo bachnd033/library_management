@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/authStore'
 import BookList from '../views/library/BookList.vue';
 import BookCreate from '../views/library/BookCreate.vue';
 import BookEdit from '../views/library/BookEdit.vue';
@@ -160,5 +161,34 @@ const router = createRouter({
     // },
   ],
 })
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+
+  let isAuthChecked = false; 
+  if (!isAuthChecked) {
+      if (!authStore.user) {
+          try {
+              await authStore.fetchUser();
+          } catch (e) {}
+      }
+      isAuthChecked = true;
+  }
+
+  const isAuthenticated = !!authStore.user;
+  const isAdmin = authStore.user?.role === 'admin';
+
+  // Chặn trang yêu cầu đăng nhập
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return next('/login');
+  }
+
+  // Nếu route yêu cầu role 'admin' nhưng user hiện tại KHÔNG phải admin
+  if (to.meta.role === 'admin' && !isAdmin) {
+      return next('/'); // Đá về trang chủ
+  }
+
+  next();
+});
 
 export default router

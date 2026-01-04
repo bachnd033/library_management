@@ -28,24 +28,4 @@ api.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
-api.interceptors.response.use(
-    (response) => {
-        return response; // Nếu thành công thì trả về bình thường
-    },
-    (error) => {
-        // Nếu Server trả về lỗi 403 (Forbidden)
-        if (error.response && error.response.status === 403) {
-            
-            router.push('/'); 
-        }
-        
-        // Nếu Server trả về lỗi 401 (Chưa đăng nhập / Hết phiên)
-        if (error.response && error.response.status === 401) {
-            router.push('/login');
-        }
-
-        return Promise.reject(error);
-    }
-);
-
 export default api;
