@@ -3,7 +3,7 @@
     <div class="book-management card shadow-sm p-4">
       
       <header class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-        <h1 class="h3 text-primary"><i class="fas fa-book me-2"></i>Quản Lý Danh Mục Sách</h1>
+        <h1 class="h3 text-primary"><i class="fas fa-book me-2"></i>Danh Mục Sách</h1>
         
         <button 
           v-if="authStore.user?.role === 'admin'" 

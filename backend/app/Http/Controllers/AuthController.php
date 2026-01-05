@@ -21,26 +21,20 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // Kiểm tra thông tin đăng nhập
-        if (!Auth::attempt($validated)) {
+        if (Auth::attempt($validated)) {
+            
+            $request->session()->regenerate(); 
+
             return response()->json([
                 'message' => 'Đăng nhập thành công',
                 'user' => Auth::user()
             ], 200);
         }
 
-        // Lấy thông tin user sau khi đăng nhập thành công
-        $user = User::where('email', $validated['email'])->first();
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Trả về JSON chứa Token và User
+        // Đăng nhập thất bại
         return response()->json([
-            'message' => 'Đăng nhập thành công',
-            'access_token' => $token, 
-            'token_type' => 'Bearer',
-            'user' => $user
-        ], 200);
+            'message' => 'Email hoặc mật khẩu không chính xác'
+        ], 401);
     }
 
     /**
