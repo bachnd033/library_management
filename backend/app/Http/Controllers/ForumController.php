@@ -110,9 +110,10 @@ class ForumController extends Controller
         if ($request->user()->role !== 'admin') return response()->json(['message' => 'Forbidden'], 403);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'string|max:255|unique:forum_categories,slug',
+            'name' => 'required|string|max:255|unique:forum_categories,name',
             'description' => 'nullable|string'
+        ], [
+            'name.unique' => 'Tên chuyên mục này đã tồn tại, vui lòng chọn tên khác.'
         ]);
 
         $category = ForumCategory::create($validated);
