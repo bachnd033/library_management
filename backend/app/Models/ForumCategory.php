@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class ForumCategory extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'slug', 'description'];
+    protected $fillable = ['name', 'description'];
 
     // Một chuyên mục có nhiều bài viết
     public function posts() {

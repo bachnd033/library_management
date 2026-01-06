@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('forum_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Tên chuyên mục
-            $table->string('slug')->unique(); // URL thân thiện (vd: hoi-dap)
             $table->text('description')->nullable();
             $table->timestamps();
         });

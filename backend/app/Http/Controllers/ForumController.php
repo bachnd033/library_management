@@ -111,7 +111,7 @@ class ForumController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:forum_categories,slug',
+            'slug' => 'string|max:255|unique:forum_categories,slug',
             'description' => 'nullable|string'
         ]);
 
