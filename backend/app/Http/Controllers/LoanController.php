@@ -53,14 +53,19 @@ class LoanController extends Controller
             // Cập nhật trạng thái
             $loan->update([
                 'status' => 'returned',
-                'return_date' => now()
+                'returned_at' => now()
             ]);
+
+            $loan->refresh();
 
             // Cộng lại số lượng tồn kho
             $loan->book()->increment('available_copies');
         });
 
-        return response()->json(['message' => 'Trả sách thành công!']);
+        return response()->json([
+            'message' => 'Trả sách thành công!',
+            'loan' => $loan 
+        ]);
     }
 
     // ADMIN 

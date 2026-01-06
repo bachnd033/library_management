@@ -35,7 +35,7 @@
             <td>#{{ loan.id }}</td>
             <td>{{ loan.user?.name }} <br> <small class="text-muted">{{ loan.user?.email }}</small></td>
             <td class="fw-bold text-primary">{{ loan.book?.title }}</td>
-            <td>{{ formatDate(loan.loan_date) }}</td>
+            <td>{{ formatDate(loan.borrowed_at) }}</td>
             <td>
                 <div v-if="loan.status === 'approved'" class="d-flex align-items-center">
                     <input type="date" class="form-control form-control-sm me-1" 

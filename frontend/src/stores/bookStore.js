@@ -178,6 +178,60 @@ export const useBookStore = defineStore('bookStore', {
             } catch (error) {
                 console.log(error);
             }
-        }
+        },
+
+        async borrowBook(bookId) {
+            this.isLoading = true;
+            try {
+                await BookService.borrowBook(bookId);
+                await this.fetchBooks();                
+                return { success: true, message: 'Tạo phiếu mượn sách thành công!' };
+            } catch (err) {
+                const msg = err.response?.data?.message || 'Không thể mượn sách.';
+                return { success: false, message: msg };
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async fetchBorrowedBooks() {
+            this.isLoading = true;
+            try {
+                const response = await BookService.getMyLoans();
+                this.borrowedBooks = response.data.data;
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async returnBook(bookId) {
+            this.isLoading = true;
+            try {
+                const response = await BookService.returnBook(bookId);
+                
+                const updatedLoan = response.data.loan; 
+
+                const index = this.borrowedBooks.findIndex(
+                    item => item.book_id === bookId && item.status === 'approved'
+                );
+
+                if (index !== -1) {
+                    this.borrowedBooks[index].status = 'returned';
+                    this.borrowedBooks[index].return_date = updatedLoan.return_date; 
+                }
+
+                // Load lại danh sách để cập nhật số lượng tồn kho
+                await this.fetchBooks(); 
+
+                return { success: true, message: 'Đã trả sách thành công.' };
+            } catch (err) {
+                const msg = err.response?.data?.message || 'Không thể trả sách.';
+                return { success: false, message: msg };
+            } finally {
+                this.isLoading = false;
+            }
+        },
     }
 });

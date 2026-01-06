@@ -85,7 +85,7 @@
                           </td>
                           <td>
                             <span v-if="loan.status === 'returned'" class="text-muted small">
-                                Trả lúc: {{ formatDate(loan.return_date) }}
+                                Trả lúc: {{ formatDate(loan.returned_at) }}
                             </span>
                             <span v-else :class="isOverdue(loan.due_date) ? 'text-danger fw-bold' : ''">
                                 {{ formatDate(loan.due_date) }}
