@@ -12,12 +12,13 @@ use App\Models\ForumCategory;
 
 class DashboardController extends Controller
 {
+
     public function getAdminStats() {
         $libraryStats = [
             'total_users' => User::count(),
             'total_books' => Book::count(),
-            'active_loans' => Loan::where('status', 'borrowed')->count(), // Đang mượn
-            'overdue_loans' => Loan::where('status', 'overdue')->count(), // Quá hạn
+            'active_loans' => Loan::where('status', 'approved')->count(), // Đang mượn
+            'overdue_loans' => Loan::where('status', 'approved')->where('due_date', '<', now())->count(), // Quá hạn
             'returned_loans' => Loan::where('status', 'returned')->count(), // Đã trả
         ];
 
@@ -47,11 +48,10 @@ class DashboardController extends Controller
     public function getUserStats(Request $request) {
         $userId = $request->user()->id;
 
-
         $libraryStats = [
-            'borrowing' => Loan::where('user_id', $userId)->where('status', 'borrowed')->count(), // Đang mượn
+            'borrowing' => Loan::where('user_id', $userId)->where('status', 'approved')->count(), // Đang mượn
             'returned'  => Loan::where('user_id', $userId)->where('status', 'returned')->count(), // Đã trả
-            'overdue'   => Loan::where('user_id', $userId)->where('status', 'overdue')->count(),  // Quá hạn (Cần cảnh báo)
+            'overdue'   => Loan::where('user_id', $userId)->where('status', 'approved')->where('due_date', '<', now())->count(),  // Quá hạn (Cần cảnh báo)
         ];
 
         $forumStats = [
@@ -67,6 +67,13 @@ class DashboardController extends Controller
                             ->whereIn('status', ['borrowed', 'overdue'])
                             ->orderBy('due_date', 'asc') // Sắp xếp ngày hết hạn gần nhất lên đầu
                             ->get();
+
+        $currentLoans->transform(function($loan) use ($now) {
+            if ($loan->due_date < $now) {
+                $loan->status = 'overdue'; 
+            }
+                return $loan;
+        });
 
         return response()->json([
             'library' => $libraryStats,
