@@ -121,6 +121,15 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
+        $isBorrowed = $book->loans()
+                            ->whereIn('status', ['pending', 'approved']) 
+                            ->exists();
+
+        if ($isBorrowed) {
+            return response()->json([
+                'message' => 'Không thể xóa sách này vì đang có người mượn hoặc đang chờ duyệt.'
+            ], 400); 
+        }
         // Xóa ảnh khỏi storage nếu sách có ảnh
         if ($book->image) {
             Storage::disk('public')->delete($book->image);

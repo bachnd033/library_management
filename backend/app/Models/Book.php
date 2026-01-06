@@ -19,14 +19,9 @@ class Book extends Model
         'available_copies',
         'image',
     ];
-
-    // public function ratings()
-    // {
-    //     return $this->hasMany(Rating::class);
-    // }
-    
-    // public function wishlists()
-    // {
-    //     return $this->hasMany(Wishlist::class);
-    // }
+    public function loans()
+    {
+        // Quan hệ 1-N: Một cuốn sách có nhiều phiếu mượn
+        return $this->hasMany(Loan::class);
+    }
 }
