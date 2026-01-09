@@ -11,15 +11,6 @@ use Illuminate\Support\Facades\Storage;
 class BookController extends Controller
 {
     /**
-     * Áp dụng middleware cho Controller.
-     */
-    public function __construct()
-    {
-        // Yêu cầu xác thực cho tất cả các phương thức
-        $this->middleware('auth:sanctum');
-    }
-
-    /**
      * Lấy danh sách (phân trang) tất cả sách.
      */
     public function index(Request $request)
