@@ -47,6 +47,7 @@ class DashboardController extends Controller
 
     public function getUserStats(Request $request) {
         $userId = $request->user()->id;
+        $now = now();
 
         $libraryStats = [
             'borrowing' => Loan::where('user_id', $userId)->where('status', 'approved')->count(), // Đang mượn
