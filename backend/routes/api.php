@@ -14,7 +14,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::get('/books', [BookController::class, 'index']); 
 
-Route::get('/books/{id}', [BookController::class, 'show']); 
+Route::get('/books/{book}', [BookController::class, 'show']); 
 
 Route::get('/forum/categories', [ForumController::class, 'getCategories']);
 
@@ -40,8 +40,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::post('/books', [BookController::class, 'store']);   // Thêm sách
-    Route::put('/books/{id}', [BookController::class, 'update']); // Sửa sách
-    Route::delete('/books/{id}', [BookController::class, 'destroy']); // Xóa sách
+    Route::put('/books/{book}', [BookController::class, 'update']); // Sửa sách
+    Route::delete('/books/{book}', [BookController::class, 'destroy']); // Xóa sách
 
     // Cập nhật hồ sơ người dùng
     Route::put('/profile', [UserController::class, 'updateProfile']);

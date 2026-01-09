@@ -34,23 +34,24 @@ export const useAuthStore = defineStore('authStore', {
       this.isLoading = true;
       this.error = null;
       try {
-        await api.get('/sanctum/csrf-cookie'); 
+          await api.get('/sanctum/csrf-cookie');
+          await api.post('/api/login', credentials);
+          await this.fetchUser();
 
-        // Gửi thông tin đăng nhập
-        await api.post('/api/login', credentials);
+          return { success: true }; 
 
-        // Lấy lại thông tin user để xác nhận
-        await this.fetchUser();
-
-        return true; 
       } catch (err) {
-        console.error('Lỗi đăng nhập:', err);
-        this.error = err.response?.data?.message || 'Đăng nhập thất bại';
-        return false; 
+          console.error('Lỗi đăng nhập:', err);
+          const msg = err.response?.data?.message || 'Đăng nhập thất bại';
+          
+          this.error = msg; 
+
+          return { success: false, message: msg }; 
+
       } finally {
-        this.isLoading = false;
+          this.isLoading = false;
       }
-    },
+  },
 
     // Đăng xuất
     async logout() {

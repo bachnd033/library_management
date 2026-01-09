@@ -45,26 +45,18 @@ const error = ref(null);
 
 const handleLogin = async () => {
   isLoading.value = true;
-  error.value = null;
-  
-  try {
-    // Gọi action 'login' từ authStore
-    await authStore.login({
-      email: email.value,
-      password: password.value,
-    });
-    
-    // Đăng nhập thành công, chuyển hướng đến trang chủ
-    router.push('/');
+  error.value = null; 
+  const result = await authStore.login({
+    email: email.value,
+    password: password.value,
+  });
 
-  } catch (err) {
-    isLoading.value = false;
-    // Xử lý lỗi
-    if (err.response && err.response.status === 422) {
-      error.value = err.response.data.errors.email[0];
-    } else {
-      error.value = 'Đã xảy ra lỗi. Vui lòng thử lại.';
-    }
+  isLoading.value = false;
+
+  if (result.success) {
+    router.push('/');
+  } else {
+    error.value = result.message; 
   }
 };
 </script>
